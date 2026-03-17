@@ -1,56 +1,61 @@
 name: Send Discord Notifications
 
-run-name: Send Discord Notification -- ${{github.event.pull_request.user.login}} -- ${{github.ref_name}}
+run-name: Send Discord Notification -- ${{ github.actor }} -- ${{ github.ref_name }}
 
 on:
   push:
 
-
 jobs:
   notify-discord:
     runs-on: ubuntu-24.04
+
     steps:
       - name: Get Current Time
         id: current_time
-        run: echo "TIMESTAMP=$(date +\"%Y%m%d_%H%M%S\")" >> $GITHUB_OUTPUT
+        run: echo "TIMESTAMP=$(date +"%Y%m%d_%H%M%S")" >> "$GITHUB_OUTPUT"
 
       - name: Make JSON
-        id: json_return
         run: |
           cat > payload.json <<EOF
             {
               "username": "Jackie Chan Adventures",
               "avatar_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpzfU0NzT1vxB1ZssjpQfaNu0Z6mtbmlejPg&s",
-              "content": "Optional top message content",
+              "content": "New push detected",
               "embeds": [
                 {
-                  "title": "A new PR from **${{ github.event.pull_request.user.login }}** please review",
-                  "description": "A detailed description for the embed.",
+                  "title": "New push by ${{ github.actor }}",
+                  "description": "A push was made to **${{ github.repository }}**.",
                   "color": 15258703,
                   "fields": [
                     {
-                      "name": "PR Base Branch",
-                      "value": "${{ github.event.pull_request.head.ref }}",
+                      "name": "Branch",
+                      "value": "${{ github.ref_name }}",
                       "inline": true
                     },
                     {
-                      "name": "PR Target Branch",
-                      "value": "${{ github.event.pull_request.base.ref }}",
+                      "name": "Repository",
+                      "value": "${{ github.repository }}",
                       "inline": true
+                    },
+                    {
+                      "name": "Commit Message",
+                      "value": "${{ github.event.head_commit.message }}",
+                      "inline": false
                     }
                   ]
                 }
               ]
             }
             EOF
-
+          
       - name: Print JSON
         run: cat payload.json
-          
+
       - name: Send webhook
         env:
           WEBHOOK_URL: ${{ secrets.BASED_BLOG_BACKEND_DISCORD_HOOK_URL }}
         run: |
           curl -H "Content-Type: application/json" \
-               -X POST --data-binary @payload.json \
+               -X POST \
+               -d @payload.json \
                "$WEBHOOK_URL"
