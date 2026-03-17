@@ -10,46 +10,56 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Get Current Time
-        id: current_time
-        run: echo "TIMESTAMP=$(date +"%Y%m%d_%H%M%S")" >> "$GITHUB_OUTPUT"
-
-      - name: Make JSON
+      - name: Build payload.json safely
+        env:
+          ACTOR: ${{ github.actor }}
+          BRANCH: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          cat > payload.json <<EOF
-            {
-              "username": "Jackie Chan Adventures",
-              "avatar_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpzfU0NzT1vxB1ZssjpQfaNu0Z6mtbmlejPg&s",
-              "content": "New push detected",
-              "embeds": [
+          jq -n \
+            --arg username "Jackie Chan Adventures" \
+            --arg avatar_url "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpzfU0NzT1vxB1ZssjpQfaNu0Z6mtbmlejPg&s" \
+            --arg actor "$ACTOR" \
+            --arg branch "$BRANCH" \
+            --arg repository "$REPOSITORY" \
+            --arg sha "$SHA" \
+            --arg commit_message "$COMMIT_MESSAGE" \
+            '{
+              username: $username,
+              avatar_url: $avatar_url,
+              content: "New push detected",
+              embeds: [
                 {
-                  "title": "New push by ${{ github.actor }}",
-                  "description": "A push was made to **${{ github.repository }}**.",
-                  "color": 15258703,
-                  "fields": [
+                  title: ("New push by " + $actor),
+                  description: ("A push was made to **" + $repository + "**."),
+                  color: 15258703,
+                  fields: [
                     {
-                      "name": "Branch",
-                      "value": "${{ github.ref_name }}",
-                      "inline": true
+                      name: "Branch",
+                      value: $branch,
+                      inline: true
                     },
                     {
-                      "name": "Repository",
-                      "value": "${{ github.repository }}",
-                      "inline": true
+                      name: "Commit",
+                      value: $sha,
+                      inline: true
                     },
                     {
-                      "name": "Commit Message",
-                      "value": "${{ github.event.head_commit.message }}",
-                      "inline": false
+                      name: "Commit Message",
+                      value: $commit_message,
+                      inline: false
                     }
                   ]
                 }
               ]
-            }
-            EOF
-          
-      - name: Print JSON
-        run: cat payload.json
+            }' > payload.json
+
+      - name: Validate JSON
+        run: |
+          cat payload.json
+          jq . payload.json
 
       - name: Send webhook
         env:
@@ -57,5 +67,5 @@ jobs:
         run: |
           curl -H "Content-Type: application/json" \
                -X POST \
-               -d @payload.json \
+               --data-binary @payload.json \
                "$WEBHOOK_URL"
