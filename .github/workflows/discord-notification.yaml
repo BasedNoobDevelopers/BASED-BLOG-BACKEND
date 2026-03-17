@@ -52,5 +52,5 @@ jobs:
           WEBHOOK_URL: ${{ secrets.BASED_BLOG_BACKEND_DISCORD_HOOK_URL }}
         run: |
           curl -H "Content-Type: application/json" \
-               -X POST -d payload.json \
+               -X POST --data-binary @payload.json \
                "$WEBHOOK_URL"
