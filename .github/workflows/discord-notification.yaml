@@ -21,7 +21,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
         run: |
           jq -n \
-            --arg username "Jackie Chan Adventures" \
+            --arg username "SWAMP-BLOG-PR-BOT" \
             --arg avatar_url "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpzfU0NzT1vxB1ZssjpQfaNu0Z6mtbmlejPg&s" \
             --arg pr_user "$PR_USER" \
             --arg pr_title "$PR_TITLE" \
@@ -32,7 +32,7 @@ jobs:
             '{
               username: $username,
               avatar_url: $avatar_url,
-              content: "New pull request activity detected",
+              content: " @ionlyhave1hp & @MKULTRA & @acompletenoobsmoke New pull request activity detected",
               embeds: [
                 {
                   title: $pr_title,
