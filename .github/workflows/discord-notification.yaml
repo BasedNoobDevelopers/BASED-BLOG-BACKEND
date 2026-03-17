@@ -17,8 +17,8 @@ jobs:
       - name: Make JSON
         id: json_return
         run: |
-          cat <<EOF >> $GITHUB_OUTPUT
-              json_file={
+          cat > payload.json <<EOF
+            {
               "username": "Jackie Chan Adventures",
               "avatar_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpzfU0NzT1vxB1ZssjpQfaNu0Z6mtbmlejPg&s",
               "content": "Optional top message content",
@@ -38,20 +38,11 @@ jobs:
                       "value": "${{ github.event.pull_request.base.ref }}",
                       "inline": true
                     }
-                  ],
-                  "thumbnail": {
-                    "url": "URL_to_thumbnail_image"
-                  },
-                  "image": {
-                    "url": "URL_to_main_image"
-                  },
-                  "footer": {
-                    "text": "Footer text"
-                  }
+                  ]
                 }
               ]
-          }
-          EOF
+            }
+            EOF
 
       - name: Print JSON
         run: echo ${{steps.json_return.outputs.json_file}}
