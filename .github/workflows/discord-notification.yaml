@@ -1,9 +1,10 @@
 name: Send Discord Notifications
 
-run-name: Send Discord Notification -- ${{ github.actor }} -- ${{ github.ref_name }}
+run-name: PR Notification -- ${{ github.event.pull_request.user.login }} -- ${{ github.event.pull_request.head.ref }}
 
 on:
-  push:
+  pull_request:
+    types: [opened, reopened, synchronize]
 
 jobs:
   notify-discord:
@@ -12,46 +13,52 @@ jobs:
     steps:
       - name: Build payload.json safely
         env:
-          ACTOR: ${{ github.actor }}
-          BRANCH: ${{ github.ref_name }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           REPOSITORY: ${{ github.repository }}
-          SHA: ${{ github.sha }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           jq -n \
             --arg username "Jackie Chan Adventures" \
             --arg avatar_url "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpzfU0NzT1vxB1ZssjpQfaNu0Z6mtbmlejPg&s" \
-            --arg actor "$ACTOR" \
-            --arg branch "$BRANCH" \
+            --arg pr_user "$PR_USER" \
+            --arg pr_title "$PR_TITLE" \
+            --arg pr_url "$PR_URL" \
+            --arg pr_head_ref "$PR_HEAD_REF" \
+            --arg pr_base_ref "$PR_BASE_REF" \
             --arg repository "$REPOSITORY" \
-            --arg sha "$SHA" \
-            --arg commit_message "$COMMIT_MESSAGE" \
             '{
               username: $username,
               avatar_url: $avatar_url,
-              content: "New push detected",
+              content: "New pull request activity detected",
               embeds: [
                 {
-                  title: ("New push by " + $actor),
-                  description: ("A push was made to **" + $repository + "**."),
+                  title: $pr_title,
+                  url: $pr_url,
+                  description: ("A new PR from **" + $pr_user + "** needs review in **" + $repository + "**."),
                   color: 15258703,
                   fields: [
                     {
-                      name: "Branch",
-                      value: $branch,
+                      name: "PR Source Branch",
+                      value: $pr_head_ref,
                       inline: true
                     },
                     {
-                      name: "Commit",
-                      value: $sha,
+                      name: "PR Target Branch",
+                      value: $pr_base_ref,
                       inline: true
                     },
                     {
-                      name: "Commit Message",
-                      value: $commit_message,
-                      inline: false
+                      name: "Author",
+                      value: $pr_user,
+                      inline: true
                     }
-                  ]
+                  ],
+                  footer: {
+                    text: "GitHub Pull Request Event"
+                  }
                 }
               ]
             }' > payload.json
