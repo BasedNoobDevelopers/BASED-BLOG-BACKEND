@@ -1,0 +1,73 @@
+name: Send Discord Notifications
+
+run-name: Send Discord Notification -- ${{github.event.pull_request.user.login}} -- ${{github.ref_name}}
+
+on:
+  push:
+
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get Current Time
+        id: current_time
+        run: echo "TIMESTAMP=$(date +\"%Y%m%d_%H%M%S\")" >> $GITHUB_OUTPUT
+
+      - name: Make JSON
+        id: json_return
+        run: |
+         echo  "json_file={
+            "username": "Jackie Chan Adventures",
+            "avatar_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpzfU0NzT1vxB1ZssjpQfaNu0Z6mtbmlejPg&s",
+            "content": "Optional top message content",
+            "embeds": [
+              {
+                "title": ""A new PR from **${{github.event.pull_request.user.login}}** please review"",
+                "description": "A detailed description for the embed.",
+                "color": 15258703,
+                "fields": [
+                  {
+                    "name": "PR Base Branch",
+                    "value": " ${{github.event.pull_request.head.ref}}",
+                    "inline": true
+                  },
+                  {
+                    "name": "PR Target Branch",
+                    "value": " ${{github.event.pull_request.base.ref}}",
+                    "inline": true
+                  }
+                ],
+                "thumbnail": {
+                  "url": "URL_to_thumbnail_image"
+                },
+                "image": {
+                  "url": "URL_to_main_image"
+                },
+                "footer": {
+                  "text": "Footer text"
+                }
+              }
+            ]
+          }" >> $GITHUB_OUTPUT
+
+      - name: Print JSON
+        run: echo ${{steps.json_return.outputs.json_file}}
+          
+      
+
+#      - name: Send Discord Message
+#        uses: Ilshidur/action-discord@master
+#        with:
+#          args: |
+#            "A new PR from **${{github.event.pull_request.user.login}}** please review"
+#            ""
+#            ```"PR Title -- ${{github.event.pull_request.title}}"
+#            "PR Base Branch -- ${{github.event.pull_request.head.ref}}"
+#            "PR Target Branch -- ${{github.event.pull_request.base.ref}}"
+#            "PR Time Stamp -- ${{steps.current_time.outputs.TIMESTAMP}}"```
+#            ""
+#            "[PR Link](https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }})"
+#        env:
+#          DISCORD_WEBHOOK: ${{secrets.DISCORD_WEBHOOK_URL}}
+#          DISCORD_USERNAME: SWAMP IZZO BOT
