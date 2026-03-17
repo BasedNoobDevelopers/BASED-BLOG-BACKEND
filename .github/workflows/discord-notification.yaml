@@ -1,0 +1,78 @@
+name: Send Discord Notifications
+
+run-name: PR Notification -- ${{ github.event.pull_request.user.login }} -- ${{ github.event.pull_request.head.ref }}
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Build payload.json safely
+        env:
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          jq -n \
+            --arg username "Jackie Chan Adventures" \
+            --arg avatar_url "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpzfU0NzT1vxB1ZssjpQfaNu0Z6mtbmlejPg&s" \
+            --arg pr_user "$PR_USER" \
+            --arg pr_title "$PR_TITLE" \
+            --arg pr_url "$PR_URL" \
+            --arg pr_head_ref "$PR_HEAD_REF" \
+            --arg pr_base_ref "$PR_BASE_REF" \
+            --arg repository "$REPOSITORY" \
+            '{
+              username: $username,
+              avatar_url: $avatar_url,
+              content: "New pull request activity detected",
+              embeds: [
+                {
+                  title: $pr_title,
+                  url: $pr_url,
+                  description: ("A new PR from **" + $pr_user + "** needs review in **" + $repository + "**."),
+                  color: 15258703,
+                  fields: [
+                    {
+                      name: "PR Source Branch",
+                      value: $pr_head_ref,
+                      inline: true
+                    },
+                    {
+                      name: "PR Target Branch",
+                      value: $pr_base_ref,
+                      inline: true
+                    },
+                    {
+                      name: "Author",
+                      value: $pr_user,
+                      inline: true
+                    }
+                  ],
+                  footer: {
+                    text: "GitHub Pull Request Event"
+                  }
+                }
+              ]
+            }' > payload.json
+
+      - name: Validate JSON
+        run: |
+          cat payload.json
+          jq . payload.json
+
+      - name: Send webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.BASED_BLOG_BACKEND_DISCORD_HOOK_URL }}
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               --data-binary @payload.json \
+               "$WEBHOOK_URL"
