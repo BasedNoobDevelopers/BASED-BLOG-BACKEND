@@ -45,7 +45,7 @@ jobs:
             EOF
 
       - name: Print JSON
-        run: echo ${{steps.json_return.outputs.payload.json}}
+        run: echo @payload.json
           
       
 
