@@ -45,7 +45,7 @@ jobs:
             EOF
 
       - name: Print JSON
-        run: echo @payload.json
+        run: cat payload.json
           
       
 
