@@ -17,39 +17,41 @@ jobs:
       - name: Make JSON
         id: json_return
         run: |
-         echo  "json_file={
-            "username": "Jackie Chan Adventures",
-            "avatar_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpzfU0NzT1vxB1ZssjpQfaNu0Z6mtbmlejPg&s",
-            "content": "Optional top message content",
-            "embeds": [
-              {
-                "title": ""A new PR from **${{github.event.pull_request.user.login}}** please review"",
-                "description": "A detailed description for the embed.",
-                "color": 15258703,
-                "fields": [
-                  {
-                    "name": "PR Base Branch",
-                    "value": " ${{github.event.pull_request.head.ref}}",
-                    "inline": true
+          cat <<EOF >> $GITHUB_OUTPUT
+              json_file={
+              "username": "Jackie Chan Adventures",
+              "avatar_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpzfU0NzT1vxB1ZssjpQfaNu0Z6mtbmlejPg&s",
+              "content": "Optional top message content",
+              "embeds": [
+                {
+                  "title": "A new PR from **${{ github.event.pull_request.user.login }}** please review",
+                  "description": "A detailed description for the embed.",
+                  "color": 15258703,
+                  "fields": [
+                    {
+                      "name": "PR Base Branch",
+                      "value": "${{ github.event.pull_request.head.ref }}",
+                      "inline": true
+                    },
+                    {
+                      "name": "PR Target Branch",
+                      "value": "${{ github.event.pull_request.base.ref }}",
+                      "inline": true
+                    }
+                  ],
+                  "thumbnail": {
+                    "url": "URL_to_thumbnail_image"
                   },
-                  {
-                    "name": "PR Target Branch",
-                    "value": " ${{github.event.pull_request.base.ref}}",
-                    "inline": true
+                  "image": {
+                    "url": "URL_to_main_image"
+                  },
+                  "footer": {
+                    "text": "Footer text"
                   }
-                ],
-                "thumbnail": {
-                  "url": "URL_to_thumbnail_image"
-                },
-                "image": {
-                  "url": "URL_to_main_image"
-                },
-                "footer": {
-                  "text": "Footer text"
                 }
-              }
-            ]
-          }" >> $GITHUB_OUTPUT
+              ]
+          }
+          EOF
 
       - name: Print JSON
         run: echo ${{steps.json_return.outputs.json_file}}
