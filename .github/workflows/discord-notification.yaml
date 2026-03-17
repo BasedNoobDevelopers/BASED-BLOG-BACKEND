@@ -47,20 +47,10 @@ jobs:
       - name: Print JSON
         run: cat payload.json
           
-      
-
-#      - name: Send Discord Message
-#        uses: Ilshidur/action-discord@master
-#        with:
-#          args: |
-#            "A new PR from **${{github.event.pull_request.user.login}}** please review"
-#            ""
-#            ```"PR Title -- ${{github.event.pull_request.title}}"
-#            "PR Base Branch -- ${{github.event.pull_request.head.ref}}"
-#            "PR Target Branch -- ${{github.event.pull_request.base.ref}}"
-#            "PR Time Stamp -- ${{steps.current_time.outputs.TIMESTAMP}}"```
-#            ""
-#            "[PR Link](https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }})"
-#        env:
-#          DISCORD_WEBHOOK: ${{secrets.DISCORD_WEBHOOK_URL}}
-#          DISCORD_USERNAME: SWAMP IZZO BOT
+      - name: Send webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.BASED_BLOG_BACKEND_DISCORD_HOOK_URL }}
+        run: |
+          curl -H "Content-Type: application/json" \
+               -d @payload.json \
+               "$WEBHOOK_URL"
