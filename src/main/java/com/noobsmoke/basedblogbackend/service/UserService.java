@@ -7,6 +7,7 @@ import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,28 +20,8 @@ public class UserService {
     private final FakeRepo repository;
     private final UserMapper userMapper;
 
-    public void addUser(RegistrationDTO registrationDTO) {
-        if (registrationDTO.userName() == null)
-            throw new IllegalArgumentException("Username is Mandatory");
-        if (repository.containsUsername(registrationDTO.userName()))
-            throw new IllegalArgumentException(("Username Already Existed"));
-        User newUser = userMapper.toUserEntity(registrationDTO);
-        newUser.setCreatedDate(LocalDateTime.now());
-        repository.addUser(newUser);
-    }
-
-    public UserResponseDTO findUser(LoginDTO loginDTO) {
-        if (loginDTO.username() == null)
-            throw new IllegalArgumentException("Username is Mandatory");
-        if (loginDTO.password() == null)
-            throw new IllegalArgumentException("Password is Mandatory");
-        return userMapper.toUserResponse(repository.findUserByUserNameAndPassword(loginDTO.username(), loginDTO.password()));
-    }
-
-    public UserResponseDTO findUserByUsername(String userName) {
-        if (userName == null)
-            throw new IllegalArgumentException("Username is Mandatory");
-        return userMapper.toUserResponse(repository.findUserByUsername(userName));
+    public UserResponseDTO getMyInfo(Authentication authentication) {
+        return userMapper.toUserResponse((User) authentication.getPrincipal());
     }
 
     public List<UserResponseDTO> getAllUsers() {
