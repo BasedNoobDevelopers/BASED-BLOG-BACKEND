@@ -18,6 +18,11 @@ public class FakeRepo {
         userList.add(newUser);
     }
 
+    public boolean containsUsername(String username) {
+        return userList.stream()
+                .anyMatch(user -> user.getUserName().equalsIgnoreCase(username));
+    }
+
     public User findUserByUsername(String username) {
         return userList.stream().filter(user -> user.getUserName()
                 .equalsIgnoreCase(username)).findFirst()

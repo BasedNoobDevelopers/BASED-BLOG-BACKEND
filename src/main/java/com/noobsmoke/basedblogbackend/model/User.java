@@ -4,27 +4,27 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
 @Getter
 @Setter
-@ToString
+@NoArgsConstructor
+@ToString(exclude = "password")
 public class User {
     private Long id;
     private String firstName;
     private String lastName;
     private String userName;
     private String password;
-    private LocalDate createdDate;
+    private String email;
+    private LocalDateTime createdDate;
     private String avatar;
-    private List<String> favorite_topics;
+    private List<String> favoriteTopics;
 
     private User(Builder builder) {
         this.id = builder.id;
@@ -32,9 +32,10 @@ public class User {
         this.lastName = builder.lastName;
         this.userName = builder.userName;
         this.password = builder.password;
+        this.email = builder.email;
         this.createdDate = builder.createdDate;
         this.avatar = builder.avatar;
-        this.favorite_topics = builder.favorite_topics;
+        this.favoriteTopics = builder.favoriteTopics;
     }
 
     public static class Builder {
@@ -43,9 +44,10 @@ public class User {
         private String firstName;
         private String userName;
         private String password;
-        private LocalDate createdDate;
+        private String email;
+        private LocalDateTime createdDate;
         private String avatar;
-        private List<String> favorite_topics;
+        private List<String> favoriteTopics;
 
         public Builder() {
 
@@ -76,7 +78,7 @@ public class User {
             return this;
         }
 
-        public Builder createdAt(LocalDate createdDate) {
+        public Builder createdAt(LocalDateTime createdDate) {
             this.createdDate = createdDate;
             return this;
         }
@@ -86,8 +88,13 @@ public class User {
             return this;
         }
 
+        public Builder email(String email) {
+            this.email = email;
+            return this;
+        }
+
         public Builder favoriteTopics(List<String> favorite_topics) {
-            this.favorite_topics = favorite_topics;
+            this.favoriteTopics = favorite_topics;
             return this;
         }
 
