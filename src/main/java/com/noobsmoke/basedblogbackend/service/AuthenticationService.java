@@ -8,6 +8,7 @@ import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,12 @@ public class AuthenticationService {
             throw new IllegalArgumentException("Username is required");
         if (loginDTO.password() == null)
             throw new IllegalArgumentException("Password is required");
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginDTO.username(),
+                        loginDTO.password()
+                )
+        );
         return userMapper.toUserResponse(fakeRepo.findUserByUserNameAndPassword(loginDTO.username(), loginDTO.password()));
     }
 

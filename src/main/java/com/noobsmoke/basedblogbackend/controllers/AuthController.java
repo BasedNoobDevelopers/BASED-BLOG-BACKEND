@@ -4,6 +4,7 @@ import com.noobsmoke.basedblogbackend.dto.LoginDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
 import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.service.AuthenticationService;
+import com.noobsmoke.basedblogbackend.service.JWTService;
 import com.noobsmoke.basedblogbackend.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.List;
 public class AuthController {
 
     private final AuthenticationService authenticationService;
+    private final JWTService jwtService;
 
     @GetMapping("/login")
     public ResponseEntity<UserResponseDTO> login(@RequestBody LoginDTO loginDTO) {
