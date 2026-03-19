@@ -1,5 +1,7 @@
 # Blog Platform – Backend Project Plan
 
+Going to test creating pr with script
+
 This repository documents the **design, architecture, and implementation plan** for a production-minded blogging platform backend. The goal of this project is not just to build CRUD endpoints, but to demonstrate **clean architecture, security, scalability, and real-world backend decision making**.
 
 ---
