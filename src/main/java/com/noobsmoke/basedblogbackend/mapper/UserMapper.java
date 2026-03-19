@@ -1,4 +1,4 @@
-package com.noobsmoke.basedblogbackend.utils;
+package com.noobsmoke.basedblogbackend.mapper;
 
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
 import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class UserMapper {
 
     public User toUserEntity(RegistrationDTO registrationDTO) {
+        if (registrationDTO == null) return null;
         return new User.Builder()
                 .userName(registrationDTO.userName())
                 .password(registrationDTO.password())
@@ -24,6 +25,7 @@ public class UserMapper {
     }
 
     public UserResponseDTO toUserResponse(User user) {
+        if (user == null) return null;
         return new UserResponseDTO(
                 user.getId(),
                 user.getFirstName(),
@@ -33,6 +35,4 @@ public class UserMapper {
                 user.getFavoriteTopics()
         );
     }
-
-
 }

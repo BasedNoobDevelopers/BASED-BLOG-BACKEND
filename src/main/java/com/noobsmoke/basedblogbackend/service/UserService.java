@@ -5,11 +5,10 @@ import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
 import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
-import com.noobsmoke.basedblogbackend.utils.UserMapper;
+import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,6 +25,7 @@ public class UserService {
         if (repository.containsUsername(registrationDTO.userName()))
             throw new IllegalArgumentException(("Username Already Existed"));
         User newUser = userMapper.toUserEntity(registrationDTO);
+        newUser.setCreatedDate(LocalDateTime.now());
         repository.addUser(newUser);
     }
 
