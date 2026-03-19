@@ -30,10 +30,25 @@ public class JWTService {
         return extractClaim(jwtToken, Claims::getSubject);
     }
 
+    // This function extracts the expiration date from the JWT Token
+    private Date extractExpiration(String jwtToken) {
+        return extractClaim(jwtToken, Claims::getExpiration);
+    }
+
     // This function extracts a specific claim from the JWT Token
     public <T> T extractClaim(String jwtToken, Function<Claims, T> claimsResolve) {
         final Claims claims = extractAllClaims(jwtToken);
         return claimsResolve.apply(claims);
+    }
+
+    // This function extracts all the claims from the JWT Token
+    private Claims extractAllClaims(String jwtToken) {
+        return Jwts.parser()
+                .verifyWith((SecretKey) getSignInKey())
+                .build()
+                .parseSignedClaims(jwtToken)
+                .getPayload();
+
     }
 
     // This function builds a JWT Token with additional claims from the given user details
@@ -59,20 +74,5 @@ public class JWTService {
     // This function checks if JWT Token is expired
     private boolean isTokenExpired(String jwtToken) {
         return extractExpiration(jwtToken).before(new Date());
-    }
-
-    // This function extracts the expiration date from the JWT Token
-    private Date extractExpiration(String jwtToken) {
-        return extractClaim(jwtToken, Claims::getExpiration);
-    }
-
-    // This function extracts all the claims from the JWT Token
-    private Claims extractAllClaims(String jwtToken) {
-        return Jwts.parser()
-                .verifyWith((SecretKey) getSignInKey())
-                .build()
-                .parseSignedClaims(jwtToken)
-                .getPayload();
-
     }
 }
