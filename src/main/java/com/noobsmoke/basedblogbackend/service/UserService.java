@@ -2,12 +2,14 @@ package com.noobsmoke.basedblogbackend.service;
 
 import com.noobsmoke.basedblogbackend.dto.LoginDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
+import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
+import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -15,30 +17,36 @@ import java.util.List;
 public class UserService {
 
     private final FakeRepo repository;
+    private final UserMapper userMapper;
 
     public void addUser(RegistrationDTO registrationDTO) {
-        User newUser = new User(
-                0,
-                registrationDTO.firstName(),
-                registrationDTO.lastName(),
-                registrationDTO.userName(),
-                registrationDTO.password(),
-                LocalDate.now(),
-                registrationDTO.avatar(),
-                registrationDTO.favorite_topics()
-        );
+        if (registrationDTO.userName() == null)
+            throw new IllegalArgumentException("Username is Mandatory");
+        if (repository.containsUsername(registrationDTO.userName()))
+            throw new IllegalArgumentException(("Username Already Existed"));
+        User newUser = userMapper.toUserEntity(registrationDTO);
+        newUser.setCreatedDate(LocalDateTime.now());
         repository.addUser(newUser);
     }
 
-    public User findUser(LoginDTO loginDTO) {
-        return repository.findUserByUserNameAndPassword(loginDTO.username(), loginDTO.password());
+    public UserResponseDTO findUser(LoginDTO loginDTO) {
+        if (loginDTO.username() == null)
+            throw new IllegalArgumentException("Username is Mandatory");
+        if (loginDTO.password() == null)
+            throw new IllegalArgumentException("Password is Mandatory");
+        return userMapper.toUserResponse(repository.findUserByUserNameAndPassword(loginDTO.username(), loginDTO.password()));
     }
 
-    public User findUserByUsername(String userName) {
-        return repository.findUserByUsername(userName);
+    public UserResponseDTO findUserByUsername(String userName) {
+        if (userName == null)
+            throw new IllegalArgumentException("Username is Mandatory");
+        return userMapper.toUserResponse(repository.findUserByUsername(userName));
     }
 
-    public List<User> getAllUsers() {
-        return repository.findAllUsers();
+    public List<UserResponseDTO> getAllUsers() {
+        return repository.findAllUsers()
+                .stream()
+                .map(userMapper::toUserResponse)
+                .toList();
     }
 }

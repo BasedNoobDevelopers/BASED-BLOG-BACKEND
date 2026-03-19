@@ -1,5 +1,6 @@
 package com.noobsmoke.basedblogbackend.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record RegistrationDTO(
