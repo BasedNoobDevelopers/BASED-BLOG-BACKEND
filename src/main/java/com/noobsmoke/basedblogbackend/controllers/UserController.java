@@ -2,6 +2,7 @@ package com.noobsmoke.basedblogbackend.controllers;
 
 import com.noobsmoke.basedblogbackend.dto.LoginDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
+import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.service.UserService;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/login")
-    public ResponseEntity<User> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<UserResponseDTO> login(@RequestBody LoginDTO loginDTO) {
         return ResponseEntity.ok(userService.findUser(loginDTO));
     }
 
@@ -29,12 +30,12 @@ public class UserController {
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<User> getByUsername(@PathVariable String username) {
+    public ResponseEntity<UserResponseDTO> getByUsername(@PathVariable String username) {
         return ResponseEntity.ok(userService.findUserByUsername(username));
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 }

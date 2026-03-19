@@ -17,6 +17,7 @@ public class UserMapper {
                 .firstName(registrationDTO.firstName())
                 .lastName(registrationDTO.lastName())
                 .createdAt(LocalDateTime.now())
+                .avatar(registrationDTO.avatar())
                 .favoriteTopics(registrationDTO.favorite_topics())
                 .email(registrationDTO.email())
                 .build();

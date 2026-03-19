@@ -2,6 +2,7 @@ package com.noobsmoke.basedblogbackend.service;
 
 import com.noobsmoke.basedblogbackend.dto.LoginDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
+import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
 import com.noobsmoke.basedblogbackend.utils.UserMapper;
@@ -28,19 +29,24 @@ public class UserService {
         repository.addUser(newUser);
     }
 
-    public User findUser(LoginDTO loginDTO) {
+    public UserResponseDTO findUser(LoginDTO loginDTO) {
         if (loginDTO.username() == null)
             throw new IllegalArgumentException("Username is Mandatory");
         if (loginDTO.password() == null)
             throw new IllegalArgumentException("Password is Mandatory");
-        return repository.findUserByUserNameAndPassword(loginDTO.username(), loginDTO.password());
+        return userMapper.toUserResponse(repository.findUserByUserNameAndPassword(loginDTO.username(), loginDTO.password()));
     }
 
-    public User findUserByUsername(String userName) {
-        return repository.findUserByUsername(userName);
+    public UserResponseDTO findUserByUsername(String userName) {
+        if (userName == null)
+            throw new IllegalArgumentException("Username is Mandatory");
+        return userMapper.toUserResponse(repository.findUserByUsername(userName));
     }
 
-    public List<User> getAllUsers() {
-        return repository.findAllUsers();
+    public List<UserResponseDTO> getAllUsers() {
+        return repository.findAllUsers()
+                .stream()
+                .map(userMapper::toUserResponse)
+                .toList();
     }
 }
