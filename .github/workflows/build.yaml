@@ -75,7 +75,7 @@ jobs:
                     }
                   ],
                   footer: {
-                    text: "GitHub Pull Request Event"
+                    text: "GitHub Push Event"
                   }
                 }
               ]
@@ -87,12 +87,12 @@ jobs:
           cat payload.json
           jq . payload.json
 
-#      - name: Send webhook
-#        if: failure()
-#        env:
-#          WEBHOOK_URL: ${{ secrets.BASED_BLOG_BACKEND_DISCORD_HOOK_URL }}
-#        run: |
-#          curl -H "Content-Type: application/json" \
-#               -X POST \
-#               --data-binary @payload.json \
-#               "$WEBHOOK_URL"
+      - name: Send webhook
+        if: failure()
+        env:
+          WEBHOOK_URL: ${{ secrets.BASED_BLOG_BACKEND_PR_DISCORD_HOOK_URL }}
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               --data-binary @payload.json \
+               "$WEBHOOK_URL"
