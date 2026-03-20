@@ -49,7 +49,7 @@ public class AuthenticationService {
                 )
         );
 
-        User returningUser = fakeRepo.findUserByUserNameAndPassword(loginDTO.username(), loginDTO.password());
+        User returningUser = fakeRepo.findUserByUsername(loginDTO.username());
         String token = jwtService.generateToken(returningUser);
         return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(returningUser));
     }

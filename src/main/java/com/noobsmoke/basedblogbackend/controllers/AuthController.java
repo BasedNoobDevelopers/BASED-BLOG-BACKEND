@@ -8,6 +8,7 @@ import com.noobsmoke.basedblogbackend.service.AuthenticationService;
 import com.noobsmoke.basedblogbackend.service.JWTService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,7 +25,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO>  register(@RequestBody RegistrationDTO registrationDTO) {
+    public ResponseEntity<AuthResponseDTO>  register(@RequestBody @Validated RegistrationDTO registrationDTO) {
       return ResponseEntity.ok(authenticationService.register(registrationDTO));
     }
 }
