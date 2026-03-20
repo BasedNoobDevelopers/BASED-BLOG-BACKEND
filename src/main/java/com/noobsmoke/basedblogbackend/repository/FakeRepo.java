@@ -20,17 +20,17 @@ public class FakeRepo {
 
     public boolean containsUsername(String username) {
         return userList.stream()
-                .anyMatch(user -> user.getUserName().equalsIgnoreCase(username));
+                .anyMatch(user -> user.getUsername().equalsIgnoreCase(username));
     }
 
     public User findUserByUsername(String username) {
-        return userList.stream().filter(user -> user.getUserName()
+        return userList.stream().filter(user -> user.getUsername()
                 .equalsIgnoreCase(username)).findFirst()
                 .orElseThrow(() ->new RuntimeException("User with the " + username + " cannot be found"));
     }
 
    public User findUserByUserNameAndPassword(String username, String password) {
-        return userList.stream().filter(user -> user.getUserName().equalsIgnoreCase(username
+        return userList.stream().filter(user -> user.getUsername().equalsIgnoreCase(username
         ) && user.getPassword().equalsIgnoreCase(password)).findFirst()
                 .orElseThrow(() -> new RuntimeException("Incorrect credentials"));
    }
