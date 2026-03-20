@@ -1,41 +1,30 @@
 package com.noobsmoke.basedblogbackend.controllers;
 
-import com.noobsmoke.basedblogbackend.dto.LoginDTO;
-import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
 import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
-import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Objects;
 
-@RestController
 @AllArgsConstructor
+@RestController
 @RequestMapping("/v1/user")
 public class UserController {
-
     private final UserService userService;
 
-    @GetMapping("/login")
-    public ResponseEntity<UserResponseDTO> login(@RequestBody LoginDTO loginDTO) {
-        return ResponseEntity.ok(userService.findUser(loginDTO));
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<String>  register(@RequestBody RegistrationDTO registrationDTO) {
-        userService.addUser(registrationDTO);
-        return ResponseEntity.ok(registrationDTO.firstName() + " " + registrationDTO.lastName() + " Has Registered");
-    }
-
-    @GetMapping("/{username}")
-    public ResponseEntity<UserResponseDTO> getByUsername(@PathVariable String username) {
-        return ResponseEntity.ok(userService.findUserByUsername(username));
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDTO> authenticatedUser() {
+        return ResponseEntity.ok(userService.getMyInfo(Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication())));
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
+    public ResponseEntity<List<UserResponseDTO>> allUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 }
