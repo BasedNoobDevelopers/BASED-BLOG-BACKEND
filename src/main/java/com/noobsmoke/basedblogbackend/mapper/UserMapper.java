@@ -32,9 +32,7 @@ public class UserMapper {
                 user.getLastName(),
                 user.getUsername(),
                 user.getAvatar(),
-                user.getFavoriteTopics(),
-                null,
-                0
+                user.getFavoriteTopics()
         );
     }
 }

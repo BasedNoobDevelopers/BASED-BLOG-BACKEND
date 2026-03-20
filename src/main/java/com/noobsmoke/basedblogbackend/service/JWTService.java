@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -49,6 +50,16 @@ public class JWTService {
                 .parseSignedClaims(jwtToken)
                 .getPayload();
 
+    }
+
+    // Generate a JWT Token for the given user details
+    public String generateToken(UserDetails userDetails) {
+        return generateToken(new HashMap<>(), userDetails);
+    }
+
+    // Generate a JWT Token with additional claims for the given user details
+    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        return buildToken(extraClaims, userDetails, jwtExpirationTime);
     }
 
     // This function builds a JWT Token with additional claims from the given user details

@@ -1,5 +1,6 @@
 package com.noobsmoke.basedblogbackend.service;
 
+import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
 import com.noobsmoke.basedblogbackend.dto.LoginDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
 import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
@@ -22,8 +23,9 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
+    private final JWTService jwtService;
 
-    public UserResponseDTO register(RegistrationDTO registrationDTO) {
+    public AuthResponseDTO register(RegistrationDTO registrationDTO) {
         if (registrationDTO.userName() == null)
             throw new IllegalArgumentException("Username is required");
         if (fakeRepo.containsUsername(registrationDTO.userName()))
@@ -31,10 +33,11 @@ public class AuthenticationService {
         User user = userMapper.toUserEntity(registrationDTO);
         user.setPassword(passwordEncoder.encode(registrationDTO.password()));
         fakeRepo.addUser(user);
-        return userMapper.toUserResponse(user);
+        String token = jwtService.generateToken(user);
+        return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(user));
     }
 
-    public UserResponseDTO login(LoginDTO loginDTO) {
+    public AuthResponseDTO login(LoginDTO loginDTO) {
         if (loginDTO.username() == null)
             throw new IllegalArgumentException("Username is required");
         if (loginDTO.password() == null)
@@ -45,7 +48,10 @@ public class AuthenticationService {
                         loginDTO.password()
                 )
         );
-        return userMapper.toUserResponse(fakeRepo.findUserByUserNameAndPassword(loginDTO.username(), loginDTO.password()));
+
+        User returningUser = fakeRepo.findUserByUserNameAndPassword(loginDTO.username(), loginDTO.password());
+        String token = jwtService.generateToken(returningUser);
+        return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(returningUser));
     }
 
     public List<UserResponseDTO> allUsers() {
