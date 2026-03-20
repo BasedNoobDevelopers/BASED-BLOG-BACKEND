@@ -39,47 +39,57 @@ jobs:
           RUN_ID: ${{ github.run_id}}
           REPOSITORY: ${{ github.repository }}
         run: |
-          jq -n \
-            --arg username "SWAMP-BLOG-ALERT-BOT" \
-            --arg avatar_url "https://fbi.cults3d.com/uploaders/14670396/illustration-file/e5e14340-ae5c-4e62-ba53-0d8ce7dfcf17/Screenshot-2024-07-21-224322.png" \
-            --arg user "$USER" \
-            --arg ref_name "$REF_NAME" \
-            --arg sha "$SHA" \
-            --arg run_id "$RUN_ID" \
-            --arg repository "$REPOSITORY" \
-            '{
-              username: $username,
-              avatar_url: $avatar_url,
-              content: "❌❌ Build Failed ❌❌",
-              embeds: [
-                {
-                  title: ("Build Failure -- " + $ref_name),
-                  url: ("https://github.com/" + $repository + "/actions/runs/" + $run_id),
-                  description: ("The build for **" + $ref_name + "** by **" + $user + "** failed in **" + $repository + "**."),
-                  color: 15548997,
-                  fields: [
+              jq -n \
+                --arg username "SWAMP-BLOG-ALERT-BOT" \
+                --arg avatar_url "https://fbi.cults3d.com/uploaders/14670396/illustration-file/e5e14340-ae5c-4e62-ba53-0d8ce7dfcf17/Screenshot-2024-07-21-224322.png" \
+                --arg user "${{ github.actor }}" \
+                --arg ref_name "${{ github.ref_name }}" \
+                --arg sha "${{ github.sha }}" \
+                --arg run_id "${{ github.run_id }}" \
+                --arg repository "${{ github.repository }}" \
+                --arg gif_url "https://media1.tenor.com/m/ipbBD8mZIcMAAAAd/metal-gear-solid-spotted.gif" \
+                --arg sound_url_1 "https://www.youtube.com/watch?v=2P5qbcRAXVk" \
+                --arg sound_url_2 "https://www.myinstants.com/en/instant/metal-gear-solid-alert/" \
+                '{
+                  username: $username,
+                  avatar_url: $avatar_url,
+                  content: "❗ ALERT ❗ Build Failed",
+                  embeds: [
                     {
-                      name: "Commit Hash Code",
-                      value: $sha,
-                      inline: true
-                    },
-                    {
-                      name: "Branch Name",
-                      value: $ref_name,
-                      inline: true
-                    },
-                    {
-                      name: "Author",
-                      value: $user,
-                      inline: true
+                      title: ("Build Failure -- " + $ref_name),
+                      url: ("https://github.com/" + $repository + "/actions/runs/" + $run_id),
+                      description: (
+                        "This build for **" + $ref_name + "** failed in **" + $repository + "**.\n\n" +
+                        "🔊 [MGS Alert Sound 1](" + $sound_url_1 + ")\n" +
+                        "🔊 [MGS Alert Sound 2](" + $sound_url_2 + ")"
+                      ),
+                      color: 15548997,
+                      image: {
+                        url: $gif_url
+                      },
+                      fields: [
+                        {
+                          name: "Branch Name",
+                          value: $ref_name,
+                          inline: true
+                        },
+                        {
+                          name: "Author",
+                          value: $user,
+                          inline: true
+                        },
+                        {
+                          name: "Commit Hash Code",
+                          value: $sha,
+                          inline: true
+                        }
+                      ],
+                      footer: {
+                        text: "GitHub Build Pipeline"
+                      }
                     }
-                  ],
-                  footer: {
-                    text: "GitHub Push Event"
-                  }
-                }
-              ]
-            }' > payload.json
+                  ]
+                }' > payload.json
 
       - name: Validate JSON
         if: failure()
