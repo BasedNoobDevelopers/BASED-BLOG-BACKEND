@@ -8,7 +8,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.core.parameters.P;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
@@ -19,7 +22,13 @@ public class ApplicationConfiguration {
 
     @Bean
     UserDetailsService userDetailsService() {
-        return fakeRepo::findUserByUsername;
+        return username ->  {
+            UserDetails userDetails = fakeRepo.findUserByUsername(username);
+            if (userDetails == null) {
+                throw new UsernameNotFoundException(username + " Cannot Be Found");
+            }
+            return userDetails;
+        };
     }
 
     @Bean
