@@ -43,17 +43,14 @@ jobs:
                     {
                       name: "PR Source Branch",
                       value: $pr_head_ref,
-                      inline: true
                     },
                     {
                       name: "PR Target Branch",
                       value: $pr_base_ref,
-                      inline: true
                     },
                     {
                       name: "Author",
                       value: $pr_user,
-                      inline: true
                     }
                   ],
                   footer: {
