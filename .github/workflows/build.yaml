@@ -1,6 +1,6 @@
 name: Build Workflow
 
-run-name: Building -- ${{ github.event.pull_request.user.login }} -- ${{ github.event.pull_request.head.ref }}
+run-name: Building -- ${{ github.actor }} -- ${{ github.ref_name }}
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: "zulu"
-          java-version: ${{inputs.java-version}}
+          java-version: ${{inputs.java-version || 25 }}
 
       - name: Build Project
         run: mvn clean install
