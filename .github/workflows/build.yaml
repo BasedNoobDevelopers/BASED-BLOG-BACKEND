@@ -1,0 +1,108 @@
+name: Build Workflow
+
+run-name: Building -- ${{ github.actor }} -- ${{ github.ref_name }}
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      java-version:
+        type: string
+        required: false
+        default: "25"
+        description: "Java Version"
+
+
+jobs:
+  build-pipeline:
+    name: "Build"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "zulu"
+          java-version: ${{inputs.java-version || 25 }}
+
+      - name: Make Env File For Build
+        run: echo ${{secrets.ENV_BUILD_FILE}} > .env
+
+      - name: Build Project
+        run: mvn clean install
+
+      - name: Build payload.json safely
+        if: failure()
+        env:
+          USER: ${{ github.actor }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id}}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+              jq -n \
+                --arg username "SWAMP-BLOG-ALERT-BOT" \
+                --arg avatar_url "https://fbi.cults3d.com/uploaders/14670396/illustration-file/e5e14340-ae5c-4e62-ba53-0d8ce7dfcf17/Screenshot-2024-07-21-224322.png" \
+                --arg user "${{ github.actor }}" \
+                --arg ref_name "${{ github.ref_name }}" \
+                --arg sha "${{ github.sha }}" \
+                --arg run_id "${{ github.run_id }}" \
+                --arg repository "${{ github.repository }}" \
+                --arg gif_url "https://i.pinimg.com/originals/c8/47/eb/c847eb853a808305cb3b43ac43d47d90.gif" \
+                --arg sound_url_1 "https://www.youtube.com/watch?v=2P5qbcRAXVk" \
+                --arg sound_url_2 "https://www.myinstants.com/en/instant/metal-gear-solid-alert/" \
+                '{
+                  username: $username,
+                  avatar_url: $avatar_url,
+                  content: "❗ ALERT ❗ Build Failed",
+                  embeds: [
+                    {
+                      title: ("Build Failure -- " + $ref_name),
+                      url: ("https://github.com/" + $repository + "/actions/runs/" + $run_id),
+                      description: (
+                        "This build for **" + $ref_name + "** failed in **" + $repository + "**.\n\n" +
+                        "🔊 [MGS Alert Sound 1](" + $sound_url_1 + ")\n" +
+                        "🔊 [MGS Alert Sound 2](" + $sound_url_2 + ")"
+                      ),
+                      color: 15548997,
+                      image: {
+                        url: $gif_url
+                      },
+                      fields: [
+                        {
+                          name: "Branch Name",
+                          value: $ref_name,
+                        },
+                        {
+                          name: "Author",
+                          value: $user,
+                        },
+                        {
+                          name: "Commit Hash Code",
+                          value: $sha,
+                        }
+                      ],
+                      footer: {
+                        text: "GitHub Build Pipeline"
+                      }
+                    }
+                  ]
+                }' > payload.json
+
+      - name: Validate JSON
+        if: failure()
+        run: |
+          cat payload.json
+          jq . payload.json
+
+      - name: Send webhook
+        if: failure()
+        env:
+          WEBHOOK_URL: ${{ secrets.BASED_BLOG_BACKEND_PR_DISCORD_HOOK_URL }}
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               --data-binary @payload.json \
+               "$WEBHOOK_URL"
