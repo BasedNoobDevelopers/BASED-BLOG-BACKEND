@@ -53,8 +53,8 @@ jobs:
               content: "❌❌ Build Failed ❌❌",
               embeds: [
                 {
-                  title: 'Build Failure -- ${ref_name}',
-                  url: https://github.com/$repository/actions/runs/$run_id,
+                  title: 'Build Failure -- ${{github.ref_name}}',
+                  url: "https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}",
                   description: ("This build for this **" + $ref_name + "** failed in **" + $repository + "**."),
                   color: 15548997,
                   fields: [
@@ -65,7 +65,7 @@ jobs:
                     },
                     {
                       name: "Branch Name",
-                      value: $ref_name,
+                      value: ${{github.ref_name}},
                       inline: true
                     },
                     {
