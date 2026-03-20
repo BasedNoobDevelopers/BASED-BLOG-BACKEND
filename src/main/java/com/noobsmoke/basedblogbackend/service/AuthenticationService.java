@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -32,6 +33,7 @@ public class AuthenticationService {
             throw new IllegalArgumentException("Username Already Exists");
         User user = userMapper.toUserEntity(registrationDTO);
         user.setPassword(passwordEncoder.encode(registrationDTO.password()));
+        user.setCreatedDate(LocalDateTime.now());
         fakeRepo.addUser(user);
         String token = jwtService.generateToken(user);
         return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(user));
@@ -49,7 +51,7 @@ public class AuthenticationService {
                 )
         );
 
-        User returningUser = fakeRepo.findUserByUserNameAndPassword(loginDTO.username(), loginDTO.password());
+        User returningUser = fakeRepo.findUserByUsername(loginDTO.username());
         String token = jwtService.generateToken(returningUser);
         return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(returningUser));
     }

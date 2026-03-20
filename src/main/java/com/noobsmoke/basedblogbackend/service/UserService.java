@@ -21,7 +21,11 @@ public class UserService {
     private final UserMapper userMapper;
 
     public UserResponseDTO getMyInfo(Authentication authentication) {
-        return userMapper.toUserResponse((User) authentication.getPrincipal());
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof User user)) {
+            throw new IllegalStateException("Invalid User Principal");
+        }
+        return userMapper.toUserResponse(user);
     }
 
     public List<UserResponseDTO> getAllUsers() {

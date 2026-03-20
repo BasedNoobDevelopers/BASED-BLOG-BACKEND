@@ -37,15 +37,15 @@ public class JWTService {
     }
 
     // This function extracts a specific claim from the JWT Token
-    public <T> T extractClaim(String jwtToken, Function<Claims, T> claimsResolve) {
+    public <T> T extractClaim(String jwtToken, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(jwtToken);
-        return claimsResolve.apply(claims);
+        return claimsResolver.apply(claims);
     }
 
     // This function extracts all the claims from the JWT Token
     private Claims extractAllClaims(String jwtToken) {
         return Jwts.parser()
-                .verifyWith((SecretKey) getSignInKey())
+                .verifyWith(getSignInKey())
                 .build()
                 .parseSignedClaims(jwtToken)
                 .getPayload();
@@ -72,7 +72,7 @@ public class JWTService {
     }
 
     // This function makes the signing key for the JWT token generation
-    private Key getSignInKey() {
+    private SecretKey getSignInKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
     }
 

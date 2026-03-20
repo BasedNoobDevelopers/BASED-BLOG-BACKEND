@@ -2,7 +2,7 @@ package com.noobsmoke.basedblogbackend.dto;
 
 public record AuthResponseDTO(
         String jwtToken,
-        long expirationID,
+        long expirationTime,
         UserResponseDTO userResponse
 ) {
 }
