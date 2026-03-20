@@ -47,7 +47,7 @@ jobs:
                 --arg sha "${{ github.sha }}" \
                 --arg run_id "${{ github.run_id }}" \
                 --arg repository "${{ github.repository }}" \
-                --arg gif_url "https://c.tenor.com/ipbBD8mZIcMAAAAd/tenor.gif" \
+                --arg gif_url "https://i.pinimg.com/originals/c8/47/eb/c847eb853a808305cb3b43ac43d47d90.gif" \
                 --arg sound_url_1 "https://www.youtube.com/watch?v=2P5qbcRAXVk" \
                 --arg sound_url_2 "https://www.myinstants.com/en/instant/metal-gear-solid-alert/" \
                 '{
