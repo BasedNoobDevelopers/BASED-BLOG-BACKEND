@@ -53,7 +53,7 @@ jobs:
               content: "❌❌ Build Failed ❌❌",
               embeds: [
                 {
-                  title: Build Failure -- $ref_name,
+                  title: "Build Failure -- " $ref_name,
                   url: https://github.com/$repository/actions/runs/$run_id,
                   description: ("This build for this **" + $ref_name + "** failed in **" + $repository + "**."),
                   color: 15548997,
