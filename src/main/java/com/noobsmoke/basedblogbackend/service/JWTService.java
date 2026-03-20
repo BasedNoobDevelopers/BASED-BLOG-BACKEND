@@ -57,7 +57,7 @@ public class JWTService {
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey())
-                .compact();
+                .compact()
     }
 
     // This function makes the signing key for the JWT token generation

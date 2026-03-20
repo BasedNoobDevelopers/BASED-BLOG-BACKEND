@@ -1,0 +1,98 @@
+name: Build Workflow
+
+run-name: Building -- ${{ github.event.pull_request.user.login }} -- ${{ github.event.pull_request.head.ref }}
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      java-version:
+        type: string
+        required: false
+        default: "25"
+        description: "Java Version"
+
+
+jobs:
+  build-pipeline:
+    name: "Build"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "zulu"
+          java-version: ${{inputs.java-version}}
+
+      - name: Build Project
+        run: mvn clean install
+
+      - name: Build payload.json safely
+        if: failure()
+        env:
+          USER: ${{ github.actor }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id}}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          jq -n \
+            --arg username "SWAMP-BLOG-ALERT-BOT" \
+            --arg avatar_url "https://fbi.cults3d.com/uploaders/14670396/illustration-file/e5e14340-ae5c-4e62-ba53-0d8ce7dfcf17/Screenshot-2024-07-21-224322.png" \
+            --arg user "$USER" \
+            --arg ref_name "$REF_NAME" \
+            --arg sha "$SHA" \
+            --arg run_id "$RUN_ID" \
+            --arg repository "$REPOSITORY" \
+            '{
+              username: $username,
+              avatar_url: $avatar_url,
+              content: "❌❌ Build Failed ❌❌",
+              embeds: [
+                {
+                  title: Build Failure -- $ref_name,
+                  url: https://github.com/$repository/actions/runs/$run_id,
+                  description: ("This build for this **" + $ref_name + "** failed in **" + $repository + "**."),
+                  color: 15548997,
+                  fields: [
+                    {
+                      name: "Commit Hash Code",
+                      value: $sha,
+                      inline: true
+                    },
+                    {
+                      name: "Branch Name",
+                      value: $ref_name,
+                      inline: true
+                    },
+                    {
+                      name: "Author",
+                      value: $user,
+                      inline: true
+                    }
+                  ],
+                  footer: {
+                    text: "GitHub Pull Request Event"
+                  }
+                }
+              ]
+            }' > payload.json
+
+      - name: Validate JSON
+        if: failure()
+        run: |
+          cat payload.json
+          jq . payload.json
+
+#      - name: Send webhook
+#        if: failure()
+#        env:
+#          WEBHOOK_URL: ${{ secrets.BASED_BLOG_BACKEND_DISCORD_HOOK_URL }}
+#        run: |
+#          curl -H "Content-Type: application/json" \
+#               -X POST \
+#               --data-binary @payload.json \
+#               "$WEBHOOK_URL"
