@@ -3,13 +3,16 @@ package com.noobsmoke.basedblogbackend.controllers;
 import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
 import com.noobsmoke.basedblogbackend.dto.LoginDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
-import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.service.AuthenticationService;
-import com.noobsmoke.basedblogbackend.service.JWTService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
@@ -19,13 +22,21 @@ public class AuthController {
     private final AuthenticationService authenticationService;
 
 
-    @GetMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody LoginDTO loginDTO) {
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDTO> login(
+            @RequestBody
+            @Valid
+            @NotNull
+            LoginDTO loginDTO) {
         return ResponseEntity.ok(authenticationService.login(loginDTO));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO>  register(@RequestBody @Validated RegistrationDTO registrationDTO) {
+    public ResponseEntity<AuthResponseDTO>  register(
+            @RequestBody
+            @Valid
+            @NotNull
+            RegistrationDTO registrationDTO) {
       return ResponseEntity.ok(authenticationService.register(registrationDTO));
     }
 }
