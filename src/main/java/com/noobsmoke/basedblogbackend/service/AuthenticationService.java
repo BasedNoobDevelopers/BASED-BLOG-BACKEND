@@ -57,6 +57,6 @@ public class AuthenticationService {
     }
 
     public List<UserResponseDTO> allUsers() {
-        return fakeRepo.findAllUsers().stream().map(userMapper::toUserResponse).toList();
+        return fakeRepo.findAllUsers().stream().map(userMapper::toUserResponse).toList()
     }
 }
