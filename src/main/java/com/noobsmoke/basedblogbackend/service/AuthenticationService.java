@@ -55,8 +55,4 @@ public class AuthenticationService {
         String token = jwtService.generateToken(returningUser);
         return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(returningUser));
     }
-
-    public List<UserResponseDTO> allUsers() {
-        return fakeRepo.findAllUsers().stream().map(userMapper::toUserResponse).toList();
-    }
 }
