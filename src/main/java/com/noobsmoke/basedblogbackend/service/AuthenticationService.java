@@ -3,7 +3,6 @@ package com.noobsmoke.basedblogbackend.service;
 import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
 import com.noobsmoke.basedblogbackend.dto.LoginDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
-import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
@@ -14,7 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @AllArgsConstructor

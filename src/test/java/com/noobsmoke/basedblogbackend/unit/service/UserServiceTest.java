@@ -1,5 +1,6 @@
 package com.noobsmoke.basedblogbackend.unit.service;
 
+import com.noobsmoke.basedblogbackend.TestUtils;
 import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import com.noobsmoke.basedblogbackend.model.User;
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+class UserServiceTest extends TestUtils {
 
     @Mock
     private FakeRepo repo;
@@ -34,7 +35,6 @@ class UserServiceTest {
 
     private UserService underTest;
 
-    private LocalDateTime localDateTime = LocalDateTime.now();
 
     @BeforeEach
     public void setUp() {
@@ -88,54 +88,5 @@ class UserServiceTest {
         verify(userMapper).toUserResponse(userList.getLast());
 
 
-    }
-
-    private List<User> getUsers() {
-        return List.of(
-                new User.Builder()
-                        .firstName("Osaretin")
-                        .lastName("Omofonmwan")
-                        .userName("OsoInfinite")
-                        .password("OsoInfinite")
-                        .email("OsoInfinite@test.com")
-                        .avatar("avatar.gif")
-                        .createdAt(localDateTime)
-                        .favoriteTopics(List.of("Manga", "TV", "BJJ"))
-                        .id(1L)
-                        .build(),
-                new User.Builder()
-                        .firstName("Ajinboye")
-                        .lastName("Uwensuyi")
-                        .userName("ondios")
-                        .password("ondios")
-                        .email("ondios@test.com")
-                        .avatar("avatar.gif")
-                        .createdAt(localDateTime)
-                        .favoriteTopics(List.of("Manga", "Anime", "Boxing"))
-                        .id(2L)
-                        .build()
-                );
-
-    }
-
-    private List<UserResponseDTO> getExpectedResponseList() {
-        return List.of(
-                new UserResponseDTO(
-                        1L,
-                        "Osaretin",
-                        "Omofonmwan",
-                        "OsoInfinite",
-                        "avatar.gif",
-                        List.of("Manga", "TV", "BJJ")
-                ),
-                new UserResponseDTO(
-                        2L,
-                        "Ajinboye",
-                        "Uwensuyi",
-                        "ondios",
-                        "avatar.gif",
-                        List.of("Manga", "Anime", "Boxing")
-                )
-        );
     }
 }
