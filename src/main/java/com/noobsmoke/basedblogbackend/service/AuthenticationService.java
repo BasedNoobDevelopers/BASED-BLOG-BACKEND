@@ -3,7 +3,6 @@ package com.noobsmoke.basedblogbackend.service;
 import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
 import com.noobsmoke.basedblogbackend.dto.LoginDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
-import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
@@ -14,7 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -27,7 +25,7 @@ public class AuthenticationService {
     private final JWTService jwtService;
 
     public AuthResponseDTO register(RegistrationDTO registrationDTO) {
-        if (registrationDTO.userName() == null)
+        if (registrationDTO.userName() == null || registrationDTO.userName().isBlank())
             throw new IllegalArgumentException("Username is required");
         if (fakeRepo.containsUsername(registrationDTO.userName()))
             throw new IllegalArgumentException("Username Already Exists");
@@ -40,9 +38,9 @@ public class AuthenticationService {
     }
 
     public AuthResponseDTO login(LoginDTO loginDTO) {
-        if (loginDTO.username() == null)
+        if (loginDTO.username() == null || loginDTO.username().isBlank())
             throw new IllegalArgumentException("Username is required");
-        if (loginDTO.password() == null)
+        if (loginDTO.password() == null || loginDTO.password().isBlank())
             throw new IllegalArgumentException("Password is required");
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
