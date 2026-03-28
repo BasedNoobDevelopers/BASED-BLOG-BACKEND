@@ -63,10 +63,20 @@ class AuthenticationServiceTest extends TestUtils {
         when(userMapper.toUserResponse(user)).thenReturn(userResponseDTO);
 
         AuthResponseDTO authResponseDTO = underTest.register(registrationDTO);
+
         assertEquals(userResponseDTO.userName(), authResponseDTO.userResponse().userName());
+        assertEquals(userResponseDTO.firstName(), authResponseDTO.userResponse().firstName());
+        assertEquals(userResponseDTO.lastName(), authResponseDTO.userResponse().lastName());
+        assertEquals(fakeTime, authResponseDTO.expirationTime());
+        assertEquals(fakeToken, authResponseDTO.jwtToken());
 
         verify(fakeRepo).containsUsername(registrationDTO.userName());
-
+        verify(userMapper).toUserEntity(registrationDTO);
+        verify(passwordEncoder).encode(registrationDTO.password());
+        verify(fakeRepo).addUser(user);
+        verify(jwtService).generateToken(user);
+        verify(jwtService).getJwtExpirationTime();
+        verify(userMapper).toUserResponse(user);
     }
 
 }
