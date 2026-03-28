@@ -11,6 +11,18 @@ public class TestUtils {
 
     private final LocalDateTime localDateTime = LocalDateTime.now();
 
+    protected RegistrationDTO getEmptyRegistrationDTO() {
+        return new RegistrationDTO(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+    }
+
     protected List<RegistrationDTO> getRegistrationDTOList() {
         return List.of(
                 new RegistrationDTO(

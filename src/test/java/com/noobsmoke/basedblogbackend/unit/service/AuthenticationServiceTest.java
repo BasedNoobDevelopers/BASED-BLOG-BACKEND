@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -78,5 +79,23 @@ class AuthenticationServiceTest extends TestUtils {
         verify(jwtService).getJwtExpirationTime();
         verify(userMapper).toUserResponse(user);
     }
+
+    @Test
+    void shouldThrowExceptionWhenDuplicateUsername() {
+        RegistrationDTO registrationDTO = getRegistrationDTOList().getFirst();
+        when(fakeRepo.containsUsername(registrationDTO.userName())).thenReturn(true);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> underTest.register(registrationDTO));
+        assertEquals("Username Already Exists", exception.getMessage());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUserNameIsNull() {
+        RegistrationDTO registrationDTO = getEmptyRegistrationDTO();
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> underTest.register(registrationDTO));
+        assertEquals("Username is required", exception.getMessage());
+    }
+
 
 }
