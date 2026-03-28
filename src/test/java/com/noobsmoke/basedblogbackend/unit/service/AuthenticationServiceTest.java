@@ -22,10 +22,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -66,7 +62,6 @@ class AuthenticationServiceTest extends TestUtils {
         when(fakeRepo.containsUsername(registrationDTO.userName())).thenReturn(false);
         when(userMapper.toUserEntity(registrationDTO)).thenReturn(user);
         when(passwordEncoder.encode(registrationDTO.password())).thenReturn(fakeEncodedPassword);
-        user.setCreatedDate(LocalDateTime.of(LocalDate.of(2026, 3, 26), LocalTime.of(15, 30)));
         when(jwtService.generateToken(user)).thenReturn(fakeToken);
         when(jwtService.getJwtExpirationTime()).thenReturn(fakeTime);
         when(userMapper.toUserResponse(user)).thenReturn(userResponseDTO);
@@ -76,6 +71,7 @@ class AuthenticationServiceTest extends TestUtils {
         assertEquals(userResponseDTO.userName(), authResponseDTO.userResponse().userName());
         assertEquals(userResponseDTO.firstName(), authResponseDTO.userResponse().firstName());
         assertEquals(userResponseDTO.lastName(), authResponseDTO.userResponse().lastName());
+        assertEquals(fakeEncodedPassword, user.getPassword());
         assertEquals(fakeTime, authResponseDTO.expirationTime());
         assertEquals(fakeToken, authResponseDTO.jwtToken());
 
@@ -95,11 +91,14 @@ class AuthenticationServiceTest extends TestUtils {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> underTest.register(registrationDTO));
         assertEquals("Username Already Exists", exception.getMessage());
+        verify(fakeRepo, never()).addUser(any());
     }
 
-    @Test
-    void shouldThrowExceptionWhenUserNameIsNull() {
-        RegistrationDTO registrationDTO = getEmptyRegistrationDTO();
+    @ParameterizedTest
+    @ValueSource(strings = {"null", "  ", ""})
+    void shouldThrowExceptionWhenUserNameIsNullOrBlank(String username) {
+        username = username.equals("null") ? null : username;
+        RegistrationDTO registrationDTO = getEmptyRegistrationDTO(username);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> underTest.register(registrationDTO));
         assertEquals("Username is required", exception.getMessage());

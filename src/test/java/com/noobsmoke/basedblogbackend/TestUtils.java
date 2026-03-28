@@ -11,11 +11,11 @@ public class TestUtils {
 
     private final LocalDateTime localDateTime = LocalDateTime.now();
 
-    protected RegistrationDTO getEmptyRegistrationDTO() {
+    protected RegistrationDTO getEmptyRegistrationDTO(String username) {
         return new RegistrationDTO(
                 null,
                 null,
-                null,
+                username,
                 null,
                 null,
                 null,
