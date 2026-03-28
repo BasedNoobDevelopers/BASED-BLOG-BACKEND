@@ -26,7 +26,10 @@ public class User implements UserDetails {
     private String password;
     private String email;
     private LocalDateTime createdDate;
+    private boolean enabled;
     private String avatar;
+    private String verificationCode;
+    private LocalDateTime verificationExpirationAt;
     private List<String> favoriteTopics;
 
     private User(Builder builder) {
@@ -37,6 +40,9 @@ public class User implements UserDetails {
         this.password = builder.password;
         this.email = builder.email;
         this.createdDate = builder.createdDate;
+        this.verificationCode = builder.verificationCode;
+        this.verificationExpirationAt = builder.verificationExpirationAt;
+        this.enabled = builder.enabled;
         this.avatar = builder.avatar;
         this.favoriteTopics = builder.favoriteTopics;
     }
@@ -64,7 +70,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return enabled;
     }
 
     public static class Builder {
@@ -75,6 +81,9 @@ public class User implements UserDetails {
         private String password;
         private String email;
         private LocalDateTime createdDate;
+        private boolean enabled;
+        private String verificationCode;
+        private LocalDateTime verificationExpirationAt;
         private String avatar;
         private List<String> favoriteTopics;
 
@@ -109,6 +118,21 @@ public class User implements UserDetails {
 
         public Builder createdAt(LocalDateTime createdDate) {
             this.createdDate = createdDate;
+            return this;
+        }
+
+        public Builder enabled(boolean enabled) {
+            this.enabled = enabled;
+            return this;
+        }
+
+        public Builder verificationCode(String verificationCode) {
+            this.verificationCode = verificationCode;
+            return this;
+        }
+
+        public Builder verificationExpirationAt(LocalDateTime verificationExpirationAt) {
+            this.verificationExpirationAt = verificationExpirationAt;
             return this;
         }
 
