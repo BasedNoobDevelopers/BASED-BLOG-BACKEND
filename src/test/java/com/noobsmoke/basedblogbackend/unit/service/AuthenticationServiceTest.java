@@ -2,6 +2,7 @@ package com.noobsmoke.basedblogbackend.unit.service;
 
 import com.noobsmoke.basedblogbackend.TestUtils;
 import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
+import com.noobsmoke.basedblogbackend.dto.LoginDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
 import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
@@ -15,6 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
@@ -42,6 +45,9 @@ class AuthenticationServiceTest extends TestUtils {
 
     @Mock
     private JWTService jwtService;
+
+    @Mock
+    private Authentication authentication;
 
     @InjectMocks
     private AuthenticationService underTest;
@@ -97,5 +103,32 @@ class AuthenticationServiceTest extends TestUtils {
         assertEquals("Username is required", exception.getMessage());
     }
 
+    @Test
+    void shouldLoginSuccessfully() {
+        User user = getUsers().getFirst();
+        String fakeToken = "Batman";
+        long fakeExpirationTime = 2000L;
+        LoginDTO loginDTO = new LoginDTO("OsoInfinite", "OsoInfinite");
+        UserResponseDTO userResponseDTO = getExpectedResponseList().getFirst();
 
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(fakeRepo.findUserByUsername(loginDTO.username())).thenReturn(user);
+        when(jwtService.generateToken(user)).thenReturn(fakeToken);
+        when(jwtService.getJwtExpirationTime()).thenReturn(fakeExpirationTime);
+        when(userMapper.toUserResponse(user)).thenReturn(userResponseDTO);
+
+        AuthResponseDTO authResponseDTO = underTest.login(loginDTO);
+
+        assertEquals(fakeToken, authResponseDTO.jwtToken());
+        assertEquals(fakeExpirationTime, authResponseDTO.expirationTime());
+        assertEquals(userResponseDTO.userName(), authResponseDTO.userResponse().userName());
+        assertEquals(userResponseDTO.avatar(), authResponseDTO.userResponse().avatar());
+
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(fakeRepo).findUserByUsername(loginDTO.username());
+        verify(jwtService).generateToken(user);
+        verify(jwtService).getJwtExpirationTime();
+        verify(userMapper).toUserResponse(user);
+    }
 }
