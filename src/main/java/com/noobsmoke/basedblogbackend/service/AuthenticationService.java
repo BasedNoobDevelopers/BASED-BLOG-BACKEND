@@ -1,9 +1,6 @@
 package com.noobsmoke.basedblogbackend.service;
 
-import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
-import com.noobsmoke.basedblogbackend.dto.LoginDTO;
-import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
-import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
+import com.noobsmoke.basedblogbackend.dto.*;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
@@ -54,5 +51,19 @@ public class AuthenticationService {
         User returningUser = fakeRepo.findUserByUsername(loginDTO.username());
         String token = jwtService.generateToken(returningUser);
         return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(returningUser));
+    }
+
+    public void verifyUser(VerifyUserRequestDTO verifyUserRequestDTO) {
+        User user = fakeRepo.findUserByEmail(verifyUserRequestDTO.email());
+        if (user.getVerificationExpirationAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Verification Code Has Expired");
+        }
+        if (!user.getVerificationCode().equals(verifyUserRequestDTO.verificationCode())) {
+            throw new IllegalArgumentException("Incorrect Verification Code");
+        }
+        user.setEnabled(true);
+        user.setVerificationCode(null);
+        user.setVerificationExpirationAt(null);
+        fakeRepo.addUser(user);
     }
 }

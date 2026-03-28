@@ -3,6 +3,7 @@ package com.noobsmoke.basedblogbackend.controllers;
 import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
 import com.noobsmoke.basedblogbackend.dto.LoginDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
+import com.noobsmoke.basedblogbackend.dto.VerifyUserRequestDTO;
 import com.noobsmoke.basedblogbackend.service.AuthenticationService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -38,5 +39,20 @@ public class AuthController {
             @NotNull
             RegistrationDTO registrationDTO) {
       return ResponseEntity.ok(authenticationService.register(registrationDTO));
+    }
+
+    @PostMapping
+    public ResponseEntity<?> verifyUser(
+            @RequestBody
+            @Valid
+            @NotNull
+            VerifyUserRequestDTO verifyUserRequestDTO
+    ) {
+        try {
+            authenticationService.verifyUser(verifyUserRequestDTO);
+            return ResponseEntity.ok(verifyUserRequestDTO.email() + " Has Been Successfully Verified");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
