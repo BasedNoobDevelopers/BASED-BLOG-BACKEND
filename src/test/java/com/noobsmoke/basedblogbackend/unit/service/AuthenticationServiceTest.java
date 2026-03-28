@@ -12,6 +12,8 @@ import com.noobsmoke.basedblogbackend.service.AuthenticationService;
 import com.noobsmoke.basedblogbackend.service.JWTService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -130,5 +132,25 @@ class AuthenticationServiceTest extends TestUtils {
         verify(jwtService).generateToken(user);
         verify(jwtService).getJwtExpirationTime();
         verify(userMapper).toUserResponse(user);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"null", "  ", ""})
+    void shouldThrowExceptionWhenUsernameIsNullOrBlank(String username) {
+        username = username.equals("null") ? null : username;
+        LoginDTO loginDTO = new LoginDTO(username, "Testing");
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> underTest.login(loginDTO));
+        assertEquals("Username is required", exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"null", " ", ""})
+    void shouldThrowExceptionWhenPasswordIsNullOrBlank(String password) {
+        password = password.equals("null") ? null : password;
+        LoginDTO loginDTO = new LoginDTO("OsoInfinite", password);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> underTest.login(loginDTO));
+        assertEquals("Password is required", exception.getMessage());
     }
 }
