@@ -11,6 +11,9 @@ public class TestUtils {
 
     private final LocalDateTime localDateTime = LocalDateTime.now();
 
+    protected String fakeSecretKey = "FinalFlashdssafkdlaGSDsdfadnsdfasidoUyiOIoofdfakeu";
+    protected long fakeExpirationTime = 2000L;
+
     protected RegistrationDTO getEmptyRegistrationDTO(String username) {
         return new RegistrationDTO(
                 null,
