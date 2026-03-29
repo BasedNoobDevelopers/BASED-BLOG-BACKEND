@@ -61,6 +61,9 @@ public class AuthenticationService {
 
     public void verifyUser(VerifyUserRequestDTO verifyUserRequestDTO) {
         User user = fakeRepo.findUserByEmail(verifyUserRequestDTO.email());
+        if (user.isEnabled()) {
+            throw new IllegalArgumentException(verifyUserRequestDTO.email() + " Is Already Verified");
+        }
         if (user.getVerificationExpirationAt().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Verification Code Is Expired");
         }
@@ -92,7 +95,7 @@ public class AuthenticationService {
                         + "<table role=\"presentation\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:600px;max-width:600px;background:#020617;border-radius:16px;overflow:hidden;border:1px solid #1e293b;\">"
 
                         + "<tr><td style=\"padding:22px 24px;background:#020617;border-bottom:1px solid #1e293b;\">"
-                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:18px;color:#22c55e;font-weight:700;\">Young Based Blog/div>"
+                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:18px;color:#22c55e;font-weight:700;\">Young Based Blog</div>"
                         + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#64748b;margin-top:6px;\">MISSION: EMAIL VERIFICATION</div>"
                         + "</td></tr>"
 
@@ -103,7 +106,7 @@ public class AuthenticationService {
 
                         + "<tr><td style=\"padding:28px 24px;\">"
 
-                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#e2e8f0;font-weight:700;\"> Player Authentication Required</div>"
+                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#e2e8f0;font-weight:700;\">Player Authentication Required</div>"
 
                         + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#94a3b8;margin-top:10px;\">"
                         + "To continue your mission, enter the verification code below."
