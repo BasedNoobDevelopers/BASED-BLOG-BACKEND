@@ -73,8 +73,6 @@ public class AuthenticationService {
         fakeRepo.updateExistingUser(user);
     }
 
-
-
     private void sendVerificationCodeEmail(String username, String email, String verificationCode) {
         String subject = "[" + username + "] Young Based Blog Account Verification";
         String htmlMessage =

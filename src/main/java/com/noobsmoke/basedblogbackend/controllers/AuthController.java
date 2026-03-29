@@ -41,7 +41,7 @@ public class AuthController {
       return ResponseEntity.ok(authenticationService.register(registrationDTO));
     }
 
-    @PostMapping
+    @PostMapping("/verify")
     public ResponseEntity<?> verifyUser(
             @RequestBody
             @Valid
