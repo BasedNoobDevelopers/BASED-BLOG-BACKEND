@@ -60,14 +60,32 @@ public class AuthenticationService {
     }
 
     public void verifyUser(VerifyUserRequestDTO verifyUserRequestDTO) {
-        User user = fakeRepo.findUserByEmail(verifyUserRequestDTO.email());
+        if (verifyUserRequestDTO == null) {
+            throw new IllegalArgumentException("Verification Request Issues");
+        }
+
+        String verificationEmail = verifyUserRequestDTO.email();
+        String verificationCode = verifyUserRequestDTO.verificationCode();
+
+        if (verificationEmail == null || verificationEmail.isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (verificationCode == null || verificationCode.isBlank()) {
+            throw new IllegalArgumentException("Verification code is required");
+        }
+
+        User user = fakeRepo.findUserByEmail(verificationEmail);
+
         if (user.isEnabled()) {
-            throw new IllegalArgumentException(verifyUserRequestDTO.email() + " Is Already Verified");
+            throw new IllegalArgumentException(verificationEmail + " Is Already Verified");
+        }
+        if (user.getVerificationCode() == null || user.getVerificationExpirationAt() == null) {
+            throw new IllegalStateException("No active verification request exists for this user");
         }
         if (user.getVerificationExpirationAt().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Verification Code Is Expired");
         }
-        if (!user.getVerificationCode().equals(verifyUserRequestDTO.verificationCode())) {
+        if (!user.getVerificationCode().equals(verificationCode)) {
             throw new IllegalArgumentException("Verification Code Is Incorrect");
         }
         user.setEnabled(true);
@@ -122,7 +140,7 @@ public class AuthenticationService {
                         + "</td></tr></table>"
 
                         + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#64748b;\">"
-                        + "⏱ Code expires in 10 minutes."
+                        + "Code expires in 10 minutes."
                         + "</div>"
 
                         + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#475569;margin-top:8px;\">"
@@ -138,7 +156,7 @@ public class AuthenticationService {
                         + "</td></tr>"
 
                         + "</table></td></tr></table>"
-                        + "</body></html>";;
+                        + "</body></html>";
         emailVerificationService.sendVerificationEmail(email, subject, htmlMessage);
     }
 
