@@ -1,9 +1,6 @@
 package com.noobsmoke.basedblogbackend.service;
 
-import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
-import com.noobsmoke.basedblogbackend.dto.LoginDTO;
-import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
-import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
+import com.noobsmoke.basedblogbackend.dto.*;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
@@ -62,10 +59,24 @@ public class AuthenticationService {
         return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(returningUser));
     }
 
+    public void verifyUser(VerifyUserRequestDTO verifyUserRequestDTO) {
+        User user = fakeRepo.findUserByEmail(verifyUserRequestDTO.email());
+        if (user.getVerificationExpirationAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Verification Code Is Expired");
+        }
+        if (!user.getVerificationCode().equals(verifyUserRequestDTO.verificationCode())) {
+            throw new IllegalArgumentException("Verification Code Is Incorrect");
+        }
+        user.setEnabled(true);
+        user.setVerificationCode(null);
+        user.setVerificationExpirationAt(null);
+        fakeRepo.updateExistingUser(user);
+    }
+
 
 
     private void sendVerificationCodeEmail(String username, String email, String verificationCode) {
-        String subject = "Account Verification (" + username + ")";
+        String subject = "[" + username + "] Young Based Blog Account Verification";
         String htmlMessage =
                 "<!doctype html>"
                         + "<html lang=\"en\">"
@@ -83,7 +94,7 @@ public class AuthenticationService {
                         + "<table role=\"presentation\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:600px;max-width:600px;background:#020617;border-radius:16px;overflow:hidden;border:1px solid #1e293b;\">"
 
                         + "<tr><td style=\"padding:22px 24px;background:#020617;border-bottom:1px solid #1e293b;\">"
-                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:18px;color:#22c55e;font-weight:700;\">🎮 Young Based Blog/div>"
+                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:18px;color:#22c55e;font-weight:700;\">Young Based Blog/div>"
                         + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#64748b;margin-top:6px;\">MISSION: EMAIL VERIFICATION</div>"
                         + "</td></tr>"
 

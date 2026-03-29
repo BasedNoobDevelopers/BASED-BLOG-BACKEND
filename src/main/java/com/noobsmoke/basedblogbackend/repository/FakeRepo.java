@@ -29,10 +29,11 @@ public class FakeRepo {
                 .orElseThrow(() ->new RuntimeException("User with the " + username + " cannot be found"));
     }
 
-//    public User updateExistingUser(User user) {
-//        userList.stream().filter(currUser -> currUser.getUsername().equals(user.getUsername()))
-//                .
-//    }
+    public User updateExistingUser(User user) {
+        if(userList.removeIf(currUser -> currUser.getUsername().equals(user.getUsername())))
+            userList.add(user);
+        return user;
+    }
 
     public User findUserByEmail(String email) {
         return userList.stream().filter(user -> user.getEmail()

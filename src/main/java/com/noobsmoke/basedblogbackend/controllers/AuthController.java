@@ -41,18 +41,18 @@ public class AuthController {
       return ResponseEntity.ok(authenticationService.register(registrationDTO));
     }
 
-//    @PostMapping
-//    public ResponseEntity<?> verifyUser(
-//            @RequestBody
-//            @Valid
-//            @NotNull
-//            VerifyUserRequestDTO verifyUserRequestDTO
-//    ) {
-//        try {
-//            authenticationService.verifyUser(verifyUserRequestDTO);
-//            return ResponseEntity.ok(verifyUserRequestDTO.email() + " Has Been Successfully Verified");
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-//    }
+    @PostMapping
+    public ResponseEntity<?> verifyUser(
+            @RequestBody
+            @Valid
+            @NotNull
+            VerifyUserRequestDTO verifyUserRequestDTO
+    ) {
+        try {
+            authenticationService.verifyUser(verifyUserRequestDTO);
+            return ResponseEntity.ok(verifyUserRequestDTO.email() + " Has Been Successfully Verified");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
