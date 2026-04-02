@@ -29,6 +29,7 @@ public class AuthController {
             @Valid
             @NotNull
             LoginDTO loginDTO) {
+        System.out.println("HEllo");
         return ResponseEntity.ok(authenticationService.login(loginDTO));
     }
 

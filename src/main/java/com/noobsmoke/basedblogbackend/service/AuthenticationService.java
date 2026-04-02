@@ -1,17 +1,21 @@
 package com.noobsmoke.basedblogbackend.service;
 
-import com.noobsmoke.basedblogbackend.dto.*;
+import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
+import com.noobsmoke.basedblogbackend.dto.LoginDTO;
+import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
+import com.noobsmoke.basedblogbackend.dto.VerifyUserRequestDTO;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Random;
 
 @Service
@@ -43,16 +47,22 @@ public class AuthenticationService {
     }
 
     public AuthResponseDTO login(LoginDTO loginDTO) {
+        System.out.println(loginDTO);
         if (loginDTO.username() == null)
             throw new IllegalArgumentException("Username is required");
         if (loginDTO.password() == null)
             throw new IllegalArgumentException("Password is required");
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginDTO.username(),
-                        loginDTO.password()
-                )
-        );
+
+        try {
+           authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginDTO.username(),
+                            loginDTO.password()
+                    )
+            );
+        } catch (DisabledException e) {
+            throw new IllegalArgumentException(loginDTO.username() + " Is Not Enabled!");
+        }
 
         User returningUser = fakeRepo.findUserByUsername(loginDTO.username());
         String token = jwtService.generateToken(returningUser);
