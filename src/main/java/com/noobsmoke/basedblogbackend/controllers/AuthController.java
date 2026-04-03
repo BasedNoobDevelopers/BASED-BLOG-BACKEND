@@ -10,10 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
@@ -29,7 +26,6 @@ public class AuthController {
             @Valid
             @NotNull
             LoginDTO loginDTO) {
-        System.out.println("HEllo");
         return ResponseEntity.ok(authenticationService.login(loginDTO));
     }
 
@@ -55,5 +51,16 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/resend")
+    public ResponseEntity<String> resendVerification(
+            @RequestParam
+            @Valid
+            @NotNull
+            String email
+    ) {
+        authenticationService.resendVerification(email);
+        return ResponseEntity.ok("Verification Sent To " + email);
     }
 }

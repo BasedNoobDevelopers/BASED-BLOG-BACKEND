@@ -39,7 +39,7 @@ public class AuthenticationService {
         user.setPassword(passwordEncoder.encode(registrationDTO.password()));
         user.setCreatedDate(LocalDateTime.now());
         user.setVerificationCode(generateVerificationCode());
-        user.setVerificationExpirationAt(LocalDateTime.now().plusMinutes(15));
+        user.setVerificationExpirationAt(LocalDateTime.now().plusMinutes(10));
         fakeRepo.addUser(user);
         sendVerificationCodeEmail(user.getUsername(), user.getEmail(), user.getVerificationCode());
         String token = jwtService.generateToken(user);
@@ -101,6 +101,23 @@ public class AuthenticationService {
         user.setEnabled(true);
         user.setVerificationCode(null);
         user.setVerificationExpirationAt(null);
+        fakeRepo.updateExistingUser(user);
+    }
+
+    public void resendVerification(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Please Enter Email");
+        }
+        User user = fakeRepo.findUserByEmail(email);
+
+        if (user.isEnabled()) {
+            throw new IllegalStateException(email + " Is Already Verified");
+        }
+
+        String verificationCode = generateVerificationCode();
+        user.setVerificationCode(verificationCode);
+        user.setVerificationExpirationAt(LocalDateTime.now().plusMinutes(10));
+        sendVerificationCodeEmail(user.getUsername(), email, verificationCode);
         fakeRepo.updateExistingUser(user);
     }
 
