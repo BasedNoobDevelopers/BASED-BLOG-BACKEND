@@ -28,7 +28,7 @@ jobs:
           java-version: ${{inputs.java-version || 25 }}
 
       - name: Make Env File For Build
-        run: echo ${{secrets.ENV_BUILD_FILE}} > .env
+        run: echo "${{secrets.ENV_BUILD_FILE}}" > .env
 
       - name: Build Project
         run: mvn clean install

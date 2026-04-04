@@ -29,6 +29,18 @@ public class FakeRepo {
                 .orElseThrow(() ->new RuntimeException("User with the " + username + " cannot be found"));
     }
 
+    public User updateExistingUser(User user) {
+        if(userList.removeIf(currUser -> currUser.getUsername().equals(user.getUsername())))
+            userList.add(user);
+        return user;
+    }
+
+    public User findUserByEmail(String email) {
+        return userList.stream().filter(user -> user.getEmail()
+                        .equalsIgnoreCase(email)).findFirst()
+                .orElseThrow(() ->new RuntimeException("User with the " + email + " cannot be found"));
+    }
+
    public User findUserByUserNameAndPassword(String username, String password) {
         return userList.stream().filter(user -> user.getUsername().equalsIgnoreCase(username
         ) && user.getPassword().equalsIgnoreCase(password)).findFirst()
