@@ -4,12 +4,10 @@ import com.noobsmoke.basedblogbackend.dto.*;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,12 +25,6 @@ public class AuthenticationService {
     private final EmailVerificationService emailVerificationService;
     private final ImageService imageService;
 
-    @Value("${image.service.image-service-bucket-prefix}")
-    private String imageServiceBucketPrefix;
-
-    @Value("${image.service.thumbnail-service-bucket-prefix}")
-    private String thumbnailServiceBucketPrefix;
-
     public AuthenticationService(FakeRepo fakeRepo, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, UserMapper userMapper, JWTService jwtService, EmailVerificationService emailVerificationService, ImageService imageService) {
         this.fakeRepo = fakeRepo;
         this.passwordEncoder = passwordEncoder;
@@ -44,10 +36,11 @@ public class AuthenticationService {
     }
 
     public AuthResponseDTO register(RegistrationDTO registrationDTO) {
-        if (registrationDTO.userName() == null || registrationDTO.userName().isBlank())
-            throw new IllegalArgumentException("Username is required");
-        if (fakeRepo.containsUsername(registrationDTO.userName()))
+       validateRegistrationRequest(registrationDTO);
+        if (fakeRepo.containsUsername(registrationDTO.userName())) {
             throw new IllegalArgumentException("Username Already Exists");
+        }
+
         User user = userMapper.toUserEntity(registrationDTO);
 
         ImageResponseDTO imageResponseDTO = imageService.uploadImage(user.getUsername(), registrationDTO.avatar());
@@ -68,10 +61,7 @@ public class AuthenticationService {
     }
 
     public AuthResponseDTO login(LoginDTO loginDTO) {
-        if (loginDTO.username() == null || loginDTO.username().isBlank())
-            throw new IllegalArgumentException("Username is required");
-        if (loginDTO.password() == null || loginDTO.password().isBlank())
-            throw new IllegalArgumentException("Password is required");
+        validateLoginRequest(loginDTO);
 
         try {
            authenticationManager.authenticate(
@@ -146,69 +136,59 @@ public class AuthenticationService {
         fakeRepo.updateExistingUser(user);
     }
 
+    // Helper Methods (Start)
+
+    private ImageResponseDTO buildImageResponse(String avatarKey) {
+        if (avatarKey == null || avatarKey.isBlank()) {
+            return null;
+        }
+
+        return imageService.buildImageResponseFromKey(avatarKey);
+    }
+
+    private void validateRegistrationRequest(RegistrationDTO registrationDTO) {
+        if (registrationDTO == null) {
+            throw new IllegalArgumentException("Registration is required");
+        }
+
+        if (registrationDTO.firstName() == null || registrationDTO.firstName().isBlank()) {
+            throw new IllegalArgumentException("First name is required");
+        }
+
+        if (registrationDTO.lastName() == null || registrationDTO.lastName().isBlank()) {
+            throw new IllegalArgumentException("Last name is required");
+        }
+
+        if (registrationDTO.userName() == null || registrationDTO.userName().isBlank()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+
+        if (registrationDTO.password() == null || registrationDTO.password().isBlank()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+
+        if (registrationDTO.email() == null || registrationDTO.email().isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+    }
+
+    private void validateLoginRequest(LoginDTO loginDTO) {
+        if (loginDTO == null) {
+            throw new IllegalArgumentException("Login request is required");
+        }
+
+        if (loginDTO.username() == null || loginDTO.username().isBlank()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+
+        if (loginDTO.password() == null || loginDTO.password().isBlank()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+    }
+
     private void sendVerificationCodeEmail(String username, String email, String verificationCode) {
         String subject = "[" + username + "] Young Based Blog Account Verification";
-        String htmlMessage =
-                "<!doctype html>"
-                        + "<html lang=\"en\">"
-                        + "<head><meta charset=\"UTF-8\" /><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" /></head>"
-
-                        + "<body style=\"margin:0;padding:0;background-color:#0f172a;\">"
-
-                        + "<div style=\"display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;\">"
-                        + "Your mission code is " + verificationCode + ". It expires in 10 minutes."
-                        + "</div>"
-
-                        + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#0f172a;\">"
-                        + "<tr><td align=\"center\" style=\"padding:24px 12px;\">"
-
-                        + "<table role=\"presentation\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:600px;max-width:600px;background:#020617;border-radius:16px;overflow:hidden;border:1px solid #1e293b;\">"
-
-                        + "<tr><td style=\"padding:22px 24px;background:#020617;border-bottom:1px solid #1e293b;\">"
-                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:18px;color:#22c55e;font-weight:700;\">Young Based Blog</div>"
-                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#64748b;margin-top:6px;\">MISSION: EMAIL VERIFICATION</div>"
-                        + "</td></tr>"
-
-                        + "<tr><td>"
-                        + "<img src=\"https://media.tenor.com/M9LiZpiqCe0AAAAM/batman-arkham.gif\" "
-                        + "alt=\"Verification\" style=\"width:100%;max-width:600px;display:block;border:0;opacity:0.9;\"/>"
-                        + "</td></tr>"
-
-                        + "<tr><td style=\"padding:28px 24px;\">"
-
-                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#e2e8f0;font-weight:700;\">Player Authentication Required</div>"
-
-                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#94a3b8;margin-top:10px;\">"
-                        + "To continue your mission, enter the verification code below."
-                        + "</div>"
-
-                        + "<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" style=\"margin:20px 0;\">"
-                        + "<tr><td style=\"background:#020617;border:2px solid #22c55e;border-radius:12px;padding:16px 20px;box-shadow:0 0 10px rgba(34,197,94,0.4);\">"
-
-                        + "<div style=\"font-family:Courier,monospace;font-size:30px;letter-spacing:8px;color:#22c55e;font-weight:800;text-align:center;\">"
-                        + verificationCode
-                        + "</div>"
-
-                        + "</td></tr></table>"
-
-                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#64748b;\">"
-                        + "Code expires in 10 minutes."
-                        + "</div>"
-
-                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#475569;margin-top:8px;\">"
-                        + "If you did not initiate this request, abort mission."
-                        + "</div>"
-
-                        + "</td></tr>"
-
-                        + "<tr><td style=\"padding:16px 24px;background:#020617;border-top:1px solid #1e293b;text-align:center;\">"
-                        + "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#334155;\">"
-                        + "SYSTEM MESSAGE • DO NOT REPLY"
-                        + "</div>"
-                        + "</td></tr>"
-
-                        + "</table></td></tr></table>"
-                        + "</body></html>";
+        String htmlMessage = emailVerificationService.buildVerificationEmailHtml(verificationCode);
         emailVerificationService.sendVerificationEmail(email, subject, htmlMessage);
     }
 
@@ -217,4 +197,6 @@ public class AuthenticationService {
         int verificationCode = random.nextInt(90000) + 10000;
         return String.valueOf(verificationCode);
     }
+
+    // Helper Methods (End)
 }

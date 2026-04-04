@@ -22,13 +22,17 @@ public class ImageService {
 
 
     private final WebClient webClient;
+    private final String imageServiceBucketPrefix;
     private final String thumbnailServiceBucketPrefix;
 
     public ImageService(
             WebClient webClient,
+            @Value("${image.service.image-service-bucket-prefix}")
+            String imageServiceBucketPrefix,
             @Value("${image.service.thumbnail-service-bucket-prefix}")
             String thumbnailServiceBucketPrefix) {
         this.webClient = webClient;
+        this.imageServiceBucketPrefix = imageServiceBucketPrefix;
         this.thumbnailServiceBucketPrefix = thumbnailServiceBucketPrefix;
     }
 
@@ -75,6 +79,19 @@ public class ImageService {
             throw new IllegalStateException("Failed to upload image", e);
         }
     }
+
+    public ImageResponseDTO buildImageResponseFromKey(String imageKey) {
+        if (imageKey == null || imageKey.isBlank()) {
+            return null;
+        }
+
+        return new ImageResponseDTO(
+                imageKey,
+                imageServiceBucketPrefix + imageKey,
+                thumbnailServiceBucketPrefix + imageKey
+        );
+    }
+
 
     private String buildFileName(String username, String originalFileName) {
         String cleanedUpName = originalFileName.replaceAll("[^a-zA-Z0-9._-]", "_");
