@@ -31,7 +31,7 @@ public class AuthenticationService {
     ;
 
     public AuthResponseDTO register(RegistrationDTO registrationDTO) {
-        if (registrationDTO.userName() == null)
+        if (registrationDTO.userName() == null || registrationDTO.userName().isBlank())
             throw new IllegalArgumentException("Username is required");
         if (fakeRepo.containsUsername(registrationDTO.userName()))
             throw new IllegalArgumentException("Username Already Exists");

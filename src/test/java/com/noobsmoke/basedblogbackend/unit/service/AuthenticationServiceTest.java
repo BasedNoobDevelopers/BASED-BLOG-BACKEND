@@ -9,6 +9,7 @@ import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
 import com.noobsmoke.basedblogbackend.service.AuthenticationService;
+import com.noobsmoke.basedblogbackend.service.EmailVerificationService;
 import com.noobsmoke.basedblogbackend.service.JWTService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +48,9 @@ class AuthenticationServiceTest extends TestUtils {
     @Mock
     private Authentication authentication;
 
+    @Mock
+    private EmailVerificationService emailVerificationService;
+
     @InjectMocks
     private AuthenticationService underTest;
 
@@ -65,6 +69,7 @@ class AuthenticationServiceTest extends TestUtils {
         when(jwtService.generateToken(user)).thenReturn(fakeToken);
         when(jwtService.getJwtExpirationTime()).thenReturn(fakeTime);
         when(userMapper.toUserResponse(user)).thenReturn(userResponseDTO);
+        doNothing().when(emailVerificationService).sendVerificationEmail(anyString(), anyString(), anyString());
 
         AuthResponseDTO authResponseDTO = underTest.register(registrationDTO);
 
