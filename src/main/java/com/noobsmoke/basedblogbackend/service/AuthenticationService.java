@@ -48,9 +48,9 @@ public class AuthenticationService {
 
     public AuthResponseDTO login(LoginDTO loginDTO) {
         System.out.println(loginDTO);
-        if (loginDTO.username() == null)
+        if (loginDTO.username() == null || loginDTO.username().isBlank())
             throw new IllegalArgumentException("Username is required");
-        if (loginDTO.password() == null)
+        if (loginDTO.password() == null || loginDTO.password().isBlank())
             throw new IllegalArgumentException("Password is required");
 
         try {
