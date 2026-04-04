@@ -19,23 +19,30 @@ public class ImageService {
 
     private final WebClient webClient;
 
-    public String uploadImage(MultipartFile imageFile) {
-        MultipartBodyBuilder builder = new MultipartBodyBuilder();
-        builder
-                .part("file", imageFile.getResource())
-                .filename(Objects.requireNonNull(imageFile.getOriginalFilename()))
-                .contentType(MediaType.parseMediaType(Objects.requireNonNull(imageFile.getContentType())));
+    public String uploadImage(String username, MultipartFile imageFile) {
+        if (imageFile == null || imageFile.isEmpty()) {
+            throw new IllegalArgumentException("Image file is required");
+        }
+        try {
+            MultipartBodyBuilder builder = new MultipartBodyBuilder();
+            builder
+                    .part("file", imageFile.getResource())
+                    .filename(username + "_" + Objects.requireNonNull(imageFile.getOriginalFilename()))
+                    .contentType(MediaType.parseMediaType(Objects.requireNonNull(imageFile.getContentType())));
 
-        String response = webClient.post()
-                .uri("/upload")
-                .body(BodyInserters.fromMultipartData(builder.build()))
-                .retrieve()
-                .bodyToMono(String.class)
-                .doOnNext(System.out::println)
-                .block();
+            String response = webClient.post()
+                    .uri("/upload")
+                    .body(BodyInserters.fromMultipartData(builder.build()))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
 
-        JSONObject root = new JSONObject(response);
-        return root.getString("url");
+            JSONObject root = new JSONObject(response);
+            return root.getString("url");
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to upload image", e);
+        }
+
     }
 
 

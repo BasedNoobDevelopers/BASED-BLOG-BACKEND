@@ -36,7 +36,7 @@ public class AuthenticationService {
         if (fakeRepo.containsUsername(registrationDTO.userName()))
             throw new IllegalArgumentException("Username Already Exists");
         User user = userMapper.toUserEntity(registrationDTO);
-        String imageURL = imageService.uploadImage(registrationDTO.avatar());
+        String imageURL = imageService.uploadImage(user.getUsername(), registrationDTO.avatar());
         user.setAvatar(imageURL);
         user.setPassword(passwordEncoder.encode(registrationDTO.password()));
         user.setCreatedDate(LocalDateTime.now());

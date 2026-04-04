@@ -33,7 +33,6 @@ public class AuthController {
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AuthResponseDTO>  register(
             @ModelAttribute
-            @RequestBody
             @Valid
             @NotNull
             RegistrationDTO registrationDTO) {
