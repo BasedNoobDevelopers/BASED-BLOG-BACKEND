@@ -12,12 +12,7 @@ public class WebClientConfig {
     private String imageServiceBaseURL;
 
     @Bean
-    public WebClient.Builder getWebClientBuilder() {
-        return WebClient.builder();
-    }
-
-    @Bean
     public WebClient webClient() {
-        return getWebClientBuilder().baseUrl(imageServiceBaseURL).build();
+       return WebClient.builder().baseUrl(imageServiceBaseURL).build();
     }
 }
