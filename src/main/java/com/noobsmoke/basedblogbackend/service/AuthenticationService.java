@@ -1,13 +1,11 @@
 package com.noobsmoke.basedblogbackend.service;
 
-import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
-import com.noobsmoke.basedblogbackend.dto.LoginDTO;
-import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
-import com.noobsmoke.basedblogbackend.dto.VerifyUserRequestDTO;
+import com.noobsmoke.basedblogbackend.dto.*;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,7 +17,6 @@ import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
-@AllArgsConstructor
 public class AuthenticationService {
 
     private final FakeRepo fakeRepo;
@@ -30,14 +27,30 @@ public class AuthenticationService {
     private final EmailVerificationService emailVerificationService;
     private final ImageService imageService;
 
+    @Value("${image.service.image-service-bucket-prefix}")
+    private String imageServiceBucketPrefix;
+
+    @Value("${image.service.thumbnail-service-bucket-prefix}")
+    private String thumbnailServiceBucketPrefix;
+
+    public AuthenticationService(FakeRepo fakeRepo, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, UserMapper userMapper, JWTService jwtService, EmailVerificationService emailVerificationService, ImageService imageService) {
+        this.fakeRepo = fakeRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.userMapper = userMapper;
+        this.jwtService = jwtService;
+        this.emailVerificationService = emailVerificationService;
+        this.imageService = imageService;
+    }
+
     public AuthResponseDTO register(RegistrationDTO registrationDTO) {
         if (registrationDTO.userName() == null || registrationDTO.userName().isBlank())
             throw new IllegalArgumentException("Username is required");
         if (fakeRepo.containsUsername(registrationDTO.userName()))
             throw new IllegalArgumentException("Username Already Exists");
         User user = userMapper.toUserEntity(registrationDTO);
-        String imageURL = imageService.uploadImage(user.getUsername(), registrationDTO.avatar())[1];
-        user.setAvatar(imageURL);
+        ImageResponseDTO imageResponseDTO = imageService.uploadImage(user.getUsername(), registrationDTO.avatar());
+        user.setAvatar(imageResponseDTO.imageKey());
         user.setPassword(passwordEncoder.encode(registrationDTO.password()));
         user.setCreatedDate(LocalDateTime.now());
         user.setVerificationCode(generateVerificationCode());
@@ -45,7 +58,7 @@ public class AuthenticationService {
         fakeRepo.addUser(user);
         sendVerificationCodeEmail(user.getUsername(), user.getEmail(), user.getVerificationCode());
         String token = jwtService.generateToken(user);
-        return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(user));
+        return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(user), imageResponseDTO);
     }
 
     public AuthResponseDTO login(LoginDTO loginDTO) {
@@ -67,7 +80,14 @@ public class AuthenticationService {
 
         User returningUser = fakeRepo.findUserByUsername(loginDTO.username());
         String token = jwtService.generateToken(returningUser);
-        return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(returningUser));
+        String avatarKey = returningUser.getAvatar();
+        ImageResponseDTO imageResponseDTO = new ImageResponseDTO(
+                avatarKey,
+                imageServiceBucketPrefix + avatarKey,
+                thumbnailServiceBucketPrefix + avatarKey
+
+        );
+        return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(returningUser), imageResponseDTO);
     }
 
     public void verifyUser(VerifyUserRequestDTO verifyUserRequestDTO) {
