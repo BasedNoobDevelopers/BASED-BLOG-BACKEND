@@ -28,6 +28,7 @@ public class AuthenticationService {
     private final UserMapper userMapper;
     private final JWTService jwtService;
     private final EmailVerificationService emailVerificationService;
+    private final ImageService imageService;
 
     public AuthResponseDTO register(RegistrationDTO registrationDTO) {
         if (registrationDTO.userName() == null || registrationDTO.userName().isBlank())
@@ -35,6 +36,8 @@ public class AuthenticationService {
         if (fakeRepo.containsUsername(registrationDTO.userName()))
             throw new IllegalArgumentException("Username Already Exists");
         User user = userMapper.toUserEntity(registrationDTO);
+        String imageURL = imageService.uploadImage(registrationDTO.avatar());
+        user.setAvatar(imageURL);
         user.setPassword(passwordEncoder.encode(registrationDTO.password()));
         user.setCreatedDate(LocalDateTime.now());
         user.setVerificationCode(generateVerificationCode());

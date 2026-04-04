@@ -34,7 +34,7 @@ public class TestUtils {
                         "OsoInfinite",
                         "OsoInfinite",
                         "OsoInfinite@test.com",
-                        "avatar.gif",
+                        null,
                         List.of("BJJ", "Travel", "Martial Arts")
                 ),
                 new RegistrationDTO(
@@ -43,7 +43,7 @@ public class TestUtils {
                         "ondios",
                         "ondios",
                         "ondios@test.com",
-                        "avatar.gif",
+                        null,
                         List.of("Boxing", "Travel", "Gaming")
                 )
         );

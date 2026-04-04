@@ -17,7 +17,6 @@ public class UserMapper {
                 .password(registrationDTO.password())
                 .firstName(registrationDTO.firstName())
                 .lastName(registrationDTO.lastName())
-                .avatar(registrationDTO.avatar())
                 .favoriteTopics(registrationDTO.favoriteTopics())
                 .email(registrationDTO.email())
                 .build();

@@ -8,6 +8,7 @@ import com.noobsmoke.basedblogbackend.service.AuthenticationService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +30,9 @@ public class AuthController {
         return ResponseEntity.ok(authenticationService.login(loginDTO));
     }
 
-    @PostMapping("/register")
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AuthResponseDTO>  register(
+            @ModelAttribute
             @RequestBody
             @Valid
             @NotNull
