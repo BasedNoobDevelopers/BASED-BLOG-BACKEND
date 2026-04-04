@@ -23,8 +23,8 @@ public class EmailVerificationService {
             emailMessageHelper.setText(text, true);
 
             mailSender.send(emailMessage);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Email Not Sent");
+        } catch (MessagingException messagingException) {
+            throw new RuntimeException("Email Not Sent " + messagingException.getMessage());
         }
 
     }

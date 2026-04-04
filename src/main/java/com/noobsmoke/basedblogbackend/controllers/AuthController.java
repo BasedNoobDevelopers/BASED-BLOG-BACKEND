@@ -39,7 +39,7 @@ public class AuthController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyUser(
+    public ResponseEntity<String> verifyUser(
             @RequestBody
             @Valid
             @NotNull

@@ -28,7 +28,6 @@ public class AuthenticationService {
     private final UserMapper userMapper;
     private final JWTService jwtService;
     private final EmailVerificationService emailVerificationService;
-    ;
 
     public AuthResponseDTO register(RegistrationDTO registrationDTO) {
         if (registrationDTO.userName() == null || registrationDTO.userName().isBlank())
