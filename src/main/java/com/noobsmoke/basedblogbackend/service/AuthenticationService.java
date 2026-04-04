@@ -49,16 +49,22 @@ public class AuthenticationService {
         if (fakeRepo.containsUsername(registrationDTO.userName()))
             throw new IllegalArgumentException("Username Already Exists");
         User user = userMapper.toUserEntity(registrationDTO);
+
         ImageResponseDTO imageResponseDTO = imageService.uploadImage(user.getUsername(), registrationDTO.avatar());
+
         user.setAvatar(imageResponseDTO.imageKey());
         user.setPassword(passwordEncoder.encode(registrationDTO.password()));
         user.setCreatedDate(LocalDateTime.now());
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationExpirationAt(LocalDateTime.now().plusMinutes(10));
+
         fakeRepo.addUser(user);
+
         sendVerificationCodeEmail(user.getUsername(), user.getEmail(), user.getVerificationCode());
         String token = jwtService.generateToken(user);
-        return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(user), imageResponseDTO);
+        UserResponseDTO userResponseDTO = userMapper.toUserResponse(user);
+
+        return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userResponseDTO, imageResponseDTO);
     }
 
     public AuthResponseDTO login(LoginDTO loginDTO) {
@@ -80,14 +86,12 @@ public class AuthenticationService {
 
         User returningUser = fakeRepo.findUserByUsername(loginDTO.username());
         String token = jwtService.generateToken(returningUser);
-        String avatarKey = returningUser.getAvatar();
-        ImageResponseDTO imageResponseDTO = new ImageResponseDTO(
-                avatarKey,
-                imageServiceBucketPrefix + avatarKey,
-                thumbnailServiceBucketPrefix + avatarKey
 
-        );
-        return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userMapper.toUserResponse(returningUser), imageResponseDTO);
+
+        ImageResponseDTO imageResponseDTO = buildImageResponse(returningUser.getAvatar());
+        UserResponseDTO userResponseDTO = userMapper.toUserResponse(returningUser);
+
+        return new AuthResponseDTO(token, jwtService.getJwtExpirationTime(), userResponseDTO, imageResponseDTO);
     }
 
     public void verifyUser(VerifyUserRequestDTO verifyUserRequestDTO) {
