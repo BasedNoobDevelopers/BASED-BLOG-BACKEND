@@ -25,7 +25,15 @@ public class AuthenticationService {
     private final EmailVerificationService emailVerificationService;
     private final ImageService imageService;
 
-    public AuthenticationService(FakeRepo fakeRepo, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, UserMapper userMapper, JWTService jwtService, EmailVerificationService emailVerificationService, ImageService imageService) {
+    public AuthenticationService(
+            FakeRepo fakeRepo,
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            UserMapper userMapper,
+            JWTService jwtService,
+            EmailVerificationService emailVerificationService,
+            ImageService imageService
+    ) {
         this.fakeRepo = fakeRepo;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;

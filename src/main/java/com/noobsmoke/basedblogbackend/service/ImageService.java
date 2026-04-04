@@ -1,15 +1,10 @@
 package com.noobsmoke.basedblogbackend.service;
 
-import com.noobsmoke.basedblogbackend.config.WebClientConfig;
 import com.noobsmoke.basedblogbackend.dto.ImageResponseDTO;
 import com.noobsmoke.basedblogbackend.dto.ImageServiceResponseDTO;
-import lombok.AllArgsConstructor;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -54,7 +49,7 @@ public class ImageService {
         }
 
         try {
-            String originalFileName = username + "_" + Objects.requireNonNull(imageFile.getOriginalFilename());
+            String originalFileName = Objects.requireNonNull(imageFile.getOriginalFilename());
             String fileName = buildFileName(username, originalFileName);
 
             MultipartBodyBuilder builder = new MultipartBodyBuilder();
