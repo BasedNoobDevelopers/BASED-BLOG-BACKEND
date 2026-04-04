@@ -22,25 +22,42 @@ public class ImageService {
 
 
     private final WebClient webClient;
+    private final String thumbnailServiceBucketPrefix;
 
-    @Value("${image.service.thumbnail-service-bucket-prefix}")
-    private String thumbnailServiceBucketPrefix;
-
-    public ImageService(WebClient webClient) {
+    public ImageService(
+            WebClient webClient,
+            @Value("${image.service.thumbnail-service-bucket-prefix}")
+            String thumbnailServiceBucketPrefix) {
         this.webClient = webClient;
+        this.thumbnailServiceBucketPrefix = thumbnailServiceBucketPrefix;
     }
 
     public ImageResponseDTO uploadImage(String username, MultipartFile imageFile) {
         if (imageFile == null || imageFile.isEmpty()) {
             throw new IllegalArgumentException("Image file is required");
         }
+        String contentType = imageFile.getContentType();
+        if (contentType == null || contentType.isBlank()) {
+            throw new IllegalArgumentException("Image content type is required");
+        }
+
+        if (!contentType.equals("image/png")
+            && !contentType.equals("image/jpeg")
+            && !contentType.equals("image/jpg")
+            && !contentType.equals("image/gif")
+        ) {
+            throw new IllegalArgumentException("Unsupported image type");
+        }
+
         try {
-            String fileName = username + "_" + Objects.requireNonNull(imageFile.getOriginalFilename());
+            String originalFileName = username + "_" + Objects.requireNonNull(imageFile.getOriginalFilename());
+            String fileName = buildFileName(username, originalFileName);
+
             MultipartBodyBuilder builder = new MultipartBodyBuilder();
             builder
                     .part("file", imageFile.getResource())
                     .filename(fileName)
-                    .contentType(MediaType.parseMediaType(Objects.requireNonNull(imageFile.getContentType())));
+                    .contentType(MediaType.parseMediaType(contentType));
 
             ImageServiceResponseDTO response = webClient.post()
                     .uri("/upload")
@@ -49,7 +66,7 @@ public class ImageService {
                     .bodyToMono(ImageServiceResponseDTO.class)
                     .block();
 
-            if (response == null) {
+            if (response == null || response.url() == null || response.url().isBlank()) {
                 throw new IllegalStateException("Unable to receive response from service");
             }
 
@@ -57,5 +74,10 @@ public class ImageService {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to upload image", e);
         }
+    }
+
+    private String buildFileName(String username, String originalFileName) {
+        String cleanedUpName = originalFileName.replaceAll("[^a-zA-Z0-9._-]", "_");
+        return username + "_" + cleanedUpName;
     }
 }
