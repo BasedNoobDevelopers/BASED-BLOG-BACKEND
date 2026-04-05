@@ -17,6 +17,8 @@ public class TestUtils {
 
     protected String fakeSecretKey = "FinalFlashdssafkdlaGSDsdfadnsdfasidoUyiOIoofdfakeu";
     protected long fakeExpirationTime = 2000L;
+    protected String testImageServiceBucketPrefix = "http://test-domain/";
+    protected String testThumbnailServiceBucketPrefix = "http://test-domain-thumbnail/";
 
     protected ImageServiceResponseDTO getImageServiceResponse(String username) {
         return new ImageServiceResponseDTO(
@@ -30,8 +32,8 @@ public class TestUtils {
     protected ImageResponseDTO getImageResponse(String username) {
         return new ImageResponseDTO(
                 username + "_test_image.jpg",
-                "http://test-domain/" + username + "_test_image.jpg",
-                "http://test-domain-thumbnail/" + username + "_test_image.jpg"
+                testImageServiceBucketPrefix + username + "_test_image.jpg",
+                testThumbnailServiceBucketPrefix + username + "_test_image.jpg"
         );
     }
 
