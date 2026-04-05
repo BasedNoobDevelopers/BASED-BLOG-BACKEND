@@ -80,7 +80,7 @@ public class ImageServiceTest extends TestUtils {
     }
 
     @Test
-    void shouldThrowExceptionWhenResponseIsNull() {
+    void shouldThrowExceptionWhenResponseUrlIsNull() {
         String username = "OsoInfinite";
         ImageServiceResponseDTO imageServiceResponseDTO = getCustomImageServiceResponse(
                 "Test",
