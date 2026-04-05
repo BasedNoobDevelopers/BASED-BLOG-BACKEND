@@ -138,6 +138,7 @@ class AuthenticationServiceTest extends TestUtils {
         long fakeExpirationTime = 2000L;
         LoginDTO loginDTO = new LoginDTO("OsoInfinite", "OsoInfinite");
         UserResponseDTO userResponseDTO = getExpectedResponseList().getFirst();
+        ImageResponseDTO imageResponseDTO = getImageResponse(userResponseDTO.userName());
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
@@ -145,19 +146,23 @@ class AuthenticationServiceTest extends TestUtils {
         when(jwtService.generateToken(user)).thenReturn(fakeToken);
         when(jwtService.getJwtExpirationTime()).thenReturn(fakeExpirationTime);
         when(userMapper.toUserResponse(user)).thenReturn(userResponseDTO);
+        when(imageService.buildImageResponseFromKey(userResponseDTO.avatar())).thenReturn(imageResponseDTO);
 
         AuthResponseDTO authResponseDTO = underTest.login(loginDTO);
 
         assertEquals(fakeToken, authResponseDTO.jwtToken());
         assertEquals(fakeExpirationTime, authResponseDTO.expirationTime());
         assertEquals(userResponseDTO.userName(), authResponseDTO.userResponse().userName());
-        assertEquals(userResponseDTO.avatar(), authResponseDTO.userResponse().avatar());
+        assertEquals(imageResponseDTO.imageKey(), authResponseDTO.userImage().imageKey());
+        assertEquals(imageResponseDTO.imageUrl(), authResponseDTO.userImage().imageUrl());
+        assertEquals(imageResponseDTO.thumbnailUrl(), authResponseDTO.userImage().thumbnailUrl());
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(fakeRepo).findUserByUsername(loginDTO.username());
         verify(jwtService).generateToken(user);
         verify(jwtService).getJwtExpirationTime();
         verify(userMapper).toUserResponse(user);
+        verify(imageService).buildImageResponseFromKey(userResponseDTO.avatar());
     }
 
     @ParameterizedTest
