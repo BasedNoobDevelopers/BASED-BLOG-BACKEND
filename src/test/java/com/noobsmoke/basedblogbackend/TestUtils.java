@@ -29,6 +29,15 @@ public class TestUtils {
         );
     }
 
+    protected ImageServiceResponseDTO getCustomImageServiceResponse(String message, String presignedUrl, int statusCode, String url) {
+        return new ImageServiceResponseDTO(
+                message,
+                presignedUrl,
+                statusCode,
+                url
+        );
+    }
+
     protected ImageResponseDTO getImageResponse(String username) {
         return new ImageResponseDTO(
                 username + "_test_image.jpg",

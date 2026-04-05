@@ -41,9 +41,9 @@ public class ImageService {
         }
 
         if (!contentType.equals("image/png")
-            && !contentType.equals("image/jpeg")
-            && !contentType.equals("image/jpg")
-            && !contentType.equals("image/gif")
+                && !contentType.equals("image/jpeg")
+                && !contentType.equals("image/jpg")
+                && !contentType.equals("image/gif")
         ) {
             throw new IllegalArgumentException("Unsupported image type");
         }
@@ -69,7 +69,9 @@ public class ImageService {
                 throw new IllegalStateException("Unable to receive response from service");
             }
 
-            return new ImageResponseDTO(fileName, response.url(), thumbnailServiceBucketPrefix+fileName);
+            return new ImageResponseDTO(fileName, response.url(), thumbnailServiceBucketPrefix + fileName);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw e;
         } catch (Exception e) {
             throw new IllegalStateException("Failed to upload image", e);
         }

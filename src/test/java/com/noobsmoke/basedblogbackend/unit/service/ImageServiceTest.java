@@ -52,8 +52,6 @@ public class ImageServiceTest extends TestUtils {
         ImageServiceResponseDTO imageServiceResponseDTO = getImageServiceResponse(username);
         ImageResponseDTO imageResponseDTO = getImageResponse(username);
 
-        MultipartFile file = mock(MultipartFile.class);
-
         ByteArrayResource resource = new ByteArrayResource("test".getBytes()) {
             @Override
             public String getFilename() {
@@ -61,10 +59,10 @@ public class ImageServiceTest extends TestUtils {
             }
         };
 
-        when(file.isEmpty()).thenReturn(false);
-        when(file.getContentType()).thenReturn("image/jpg");
-        when(file.getOriginalFilename()).thenReturn("test_image.jpg");
-        when(file.getResource()).thenReturn(resource);
+        when(multipartFile.isEmpty()).thenReturn(false);
+        when(multipartFile.getContentType()).thenReturn("image/jpg");
+        when(multipartFile.getOriginalFilename()).thenReturn("test_image.jpg");
+        when(multipartFile.getResource()).thenReturn(resource);
 
 
         when(webClient.post()).thenReturn(requestBodyUriSpec);
@@ -74,7 +72,7 @@ public class ImageServiceTest extends TestUtils {
         when(responseSpec.bodyToMono(ImageServiceResponseDTO.class))
                 .thenReturn(Mono.just(imageServiceResponseDTO));
 
-        ImageResponseDTO actualResponse = underTest.uploadImage(username, file);
+        ImageResponseDTO actualResponse = underTest.uploadImage(username, multipartFile);
 
         assertEquals(imageResponseDTO.imageKey(), actualResponse.imageKey());
         assertEquals(imageResponseDTO.imageUrl(), actualResponse.imageUrl());
@@ -82,10 +80,46 @@ public class ImageServiceTest extends TestUtils {
     }
 
     @Test
+    void shouldThrowExceptionWhenResponseIsNull() {
+        String username = "OsoInfinite";
+        ImageServiceResponseDTO imageServiceResponseDTO = getCustomImageServiceResponse(
+                "Test",
+                "Test",
+                200,
+                ""
+        );
+
+        ByteArrayResource resource = new ByteArrayResource("test".getBytes()) {
+            @Override
+            public String getFilename() {
+                return "test_image.jpg";
+            }
+        };
+
+        when(multipartFile.isEmpty()).thenReturn(false);
+        when(multipartFile.getContentType()).thenReturn("image/jpg");
+        when(multipartFile.getOriginalFilename()).thenReturn("test_image.jpg");
+        when(multipartFile.getResource()).thenReturn(resource);
+
+
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri("/upload")).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.body(any(BodyInserter.class))).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(ImageServiceResponseDTO.class))
+                .thenReturn(Mono.just(imageServiceResponseDTO));
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> underTest.uploadImage(username, multipartFile));
+
+        assertEquals("Unable to receive response from service", exception.getMessage());
+
+    }
+
+    @Test
     void shouldThrowExceptionWhenFileFailedToUpload() {
         String username = "OsoInfinite";
         ImageServiceResponseDTO imageServiceResponseDTO = getImageServiceResponse(username);
-        ImageResponseDTO imageResponseDTO = getImageResponse(username);
 
 
         when(multipartFile.isEmpty()).thenReturn(false);
@@ -101,10 +135,10 @@ public class ImageServiceTest extends TestUtils {
         when(responseSpec.bodyToMono(ImageServiceResponseDTO.class))
                 .thenReturn(Mono.just(imageServiceResponseDTO));
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> underTest.uploadImage(username, multipartFile));
 
-        assertEquals("Failed to upload image", exception.getMessage());
+        assertEquals("'part' must not be null", exception.getMessage());
     }
 
     @ParameterizedTest
