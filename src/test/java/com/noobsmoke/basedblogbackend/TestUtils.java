@@ -1,11 +1,15 @@
 package com.noobsmoke.basedblogbackend;
 
+import com.noobsmoke.basedblogbackend.dto.ImageResponseDTO;
+import com.noobsmoke.basedblogbackend.dto.ImageServiceResponseDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
 import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.model.User;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 public class TestUtils {
 
@@ -13,16 +17,52 @@ public class TestUtils {
 
     protected String fakeSecretKey = "FinalFlashdssafkdlaGSDsdfadnsdfasidoUyiOIoofdfakeu";
     protected long fakeExpirationTime = 2000L;
+    protected String testImageServiceBucketPrefix = "http://test-domain/";
+    protected String testThumbnailServiceBucketPrefix = "http://test-domain-thumbnail/";
 
-    protected RegistrationDTO getEmptyRegistrationDTO(String username) {
+    protected ImageServiceResponseDTO getImageServiceResponse(String username) {
+        return new ImageServiceResponseDTO(
+                "Image uploaded",
+                username + "_test_image.jpg",
+                200,
+                "http://test-domain/" + username + "_test_image.jpg"
+        );
+    }
+
+    protected ImageServiceResponseDTO getCustomImageServiceResponse(String message, String presignedUrl, int statusCode, String url) {
+        return new ImageServiceResponseDTO(
+                message,
+                presignedUrl,
+                statusCode,
+                url
+        );
+    }
+
+    protected ImageResponseDTO getImageResponse(String username) {
+        return new ImageResponseDTO(
+                username + "_test_image.jpg",
+                testImageServiceBucketPrefix + username + "_test_image.jpg",
+                testThumbnailServiceBucketPrefix + username + "_test_image.jpg"
+        );
+    }
+
+    protected RegistrationDTO getCustomRegistrationDTO(
+            String firstName,
+            String lastName,
+            String username,
+            String password,
+            String email,
+            MultipartFile avatar,
+            List<String> favoriteTopics
+    ) {
         return new RegistrationDTO(
-                null,
-                null,
+                firstName,
+                lastName,
                 username,
-                null,
-                null,
-                null,
-                null
+                password,
+                email,
+                avatar,
+                favoriteTopics
         );
     }
 
@@ -34,7 +74,7 @@ public class TestUtils {
                         "OsoInfinite",
                         "OsoInfinite",
                         "OsoInfinite@test.com",
-                        "avatar.gif",
+                        null,
                         List.of("BJJ", "Travel", "Martial Arts")
                 ),
                 new RegistrationDTO(
@@ -43,7 +83,7 @@ public class TestUtils {
                         "ondios",
                         "ondios",
                         "ondios@test.com",
-                        "avatar.gif",
+                        null,
                         List.of("Boxing", "Travel", "Gaming")
                 )
         );

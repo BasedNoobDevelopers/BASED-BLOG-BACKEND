@@ -1,15 +1,13 @@
 package com.noobsmoke.basedblogbackend.unit.service;
 
 import com.noobsmoke.basedblogbackend.TestUtils;
-import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
-import com.noobsmoke.basedblogbackend.dto.LoginDTO;
-import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
-import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
+import com.noobsmoke.basedblogbackend.dto.*;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
 import com.noobsmoke.basedblogbackend.service.AuthenticationService;
 import com.noobsmoke.basedblogbackend.service.EmailVerificationService;
+import com.noobsmoke.basedblogbackend.service.ImageService;
 import com.noobsmoke.basedblogbackend.service.JWTService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +49,9 @@ class AuthenticationServiceTest extends TestUtils {
     @Mock
     private EmailVerificationService emailVerificationService;
 
+    @Mock
+    private ImageService imageService;
+
     @InjectMocks
     private AuthenticationService underTest;
 
@@ -62,14 +63,16 @@ class AuthenticationServiceTest extends TestUtils {
         RegistrationDTO registrationDTO = getRegistrationDTOList().getFirst();
         User user = getUsers().getFirst();
         UserResponseDTO userResponseDTO = getExpectedResponseList().getFirst();
+        ImageResponseDTO imageResponseDTO = getImageResponse(userResponseDTO.userName());
 
         when(fakeRepo.containsUsername(registrationDTO.userName())).thenReturn(false);
         when(userMapper.toUserEntity(registrationDTO)).thenReturn(user);
+        when(imageService.uploadImage(any(), any())).thenReturn(imageResponseDTO);
         when(passwordEncoder.encode(registrationDTO.password())).thenReturn(fakeEncodedPassword);
         when(jwtService.generateToken(user)).thenReturn(fakeToken);
         when(jwtService.getJwtExpirationTime()).thenReturn(fakeTime);
         when(userMapper.toUserResponse(user)).thenReturn(userResponseDTO);
-        doNothing().when(emailVerificationService).sendVerificationEmail(anyString(), anyString(), anyString());
+        when(emailVerificationService.buildVerificationEmailHtml(anyString())).thenReturn("<html>swamp</html>");
 
         AuthResponseDTO authResponseDTO = underTest.register(registrationDTO);
 
@@ -79,6 +82,9 @@ class AuthenticationServiceTest extends TestUtils {
         assertEquals(fakeEncodedPassword, user.getPassword());
         assertEquals(fakeTime, authResponseDTO.expirationTime());
         assertEquals(fakeToken, authResponseDTO.jwtToken());
+        assertEquals(imageResponseDTO.imageKey(), authResponseDTO.userImage().imageKey());
+        assertEquals(imageResponseDTO.imageUrl(), authResponseDTO.userImage().imageUrl());
+        assertEquals(imageResponseDTO.thumbnailUrl(), authResponseDTO.userImage().thumbnailUrl());
 
         verify(fakeRepo).containsUsername(registrationDTO.userName());
         verify(userMapper).toUserEntity(registrationDTO);
@@ -87,6 +93,14 @@ class AuthenticationServiceTest extends TestUtils {
         verify(jwtService).generateToken(user);
         verify(jwtService).getJwtExpirationTime();
         verify(userMapper).toUserResponse(user);
+        verify(emailVerificationService).buildVerificationEmailHtml(anyString());
+        verify(emailVerificationService).sendVerificationEmail(
+                user.getEmail(),
+                "[" + user.getUsername() + "] Young Based Blog Account Verification",
+                "<html>swamp</html>"
+
+        );
+        verify(imageService).uploadImage(registrationDTO.userName(), registrationDTO.avatar());
     }
 
     @Test
@@ -103,7 +117,15 @@ class AuthenticationServiceTest extends TestUtils {
     @ValueSource(strings = {"null", "  ", ""})
     void shouldThrowExceptionWhenUserNameIsNullOrBlank(String username) {
         username = username.equals("null") ? null : username;
-        RegistrationDTO registrationDTO = getEmptyRegistrationDTO(username);
+        RegistrationDTO registrationDTO = getCustomRegistrationDTO(
+                "Osaretin",
+                "Omofonmwan",
+                username,
+                "test",
+                "test@email.com",
+                null,
+                null
+        );
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> underTest.register(registrationDTO));
         assertEquals("Username is required", exception.getMessage());
@@ -116,6 +138,7 @@ class AuthenticationServiceTest extends TestUtils {
         long fakeExpirationTime = 2000L;
         LoginDTO loginDTO = new LoginDTO("OsoInfinite", "OsoInfinite");
         UserResponseDTO userResponseDTO = getExpectedResponseList().getFirst();
+        ImageResponseDTO imageResponseDTO = getImageResponse(userResponseDTO.userName());
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
@@ -123,19 +146,23 @@ class AuthenticationServiceTest extends TestUtils {
         when(jwtService.generateToken(user)).thenReturn(fakeToken);
         when(jwtService.getJwtExpirationTime()).thenReturn(fakeExpirationTime);
         when(userMapper.toUserResponse(user)).thenReturn(userResponseDTO);
+        when(imageService.buildImageResponseFromKey(userResponseDTO.avatar())).thenReturn(imageResponseDTO);
 
         AuthResponseDTO authResponseDTO = underTest.login(loginDTO);
 
         assertEquals(fakeToken, authResponseDTO.jwtToken());
         assertEquals(fakeExpirationTime, authResponseDTO.expirationTime());
         assertEquals(userResponseDTO.userName(), authResponseDTO.userResponse().userName());
-        assertEquals(userResponseDTO.avatar(), authResponseDTO.userResponse().avatar());
+        assertEquals(imageResponseDTO.imageKey(), authResponseDTO.userImage().imageKey());
+        assertEquals(imageResponseDTO.imageUrl(), authResponseDTO.userImage().imageUrl());
+        assertEquals(imageResponseDTO.thumbnailUrl(), authResponseDTO.userImage().thumbnailUrl());
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(fakeRepo).findUserByUsername(loginDTO.username());
         verify(jwtService).generateToken(user);
         verify(jwtService).getJwtExpirationTime();
         verify(userMapper).toUserResponse(user);
+        verify(imageService).buildImageResponseFromKey(userResponseDTO.avatar());
     }
 
     @ParameterizedTest
