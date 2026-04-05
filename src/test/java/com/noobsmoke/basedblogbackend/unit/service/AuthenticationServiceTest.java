@@ -73,8 +73,9 @@ class AuthenticationServiceTest extends TestUtils {
         when(jwtService.generateToken(user)).thenReturn(fakeToken);
         when(jwtService.getJwtExpirationTime()).thenReturn(fakeTime);
         when(userMapper.toUserResponse(user)).thenReturn(userResponseDTO);
-        when(imageService.uploadImage(any())).thenReturn("http://avatar.jpg");
-        doNothing().when(emailVerificationService).sendVerificationEmail(anyString(), anyString(), anyString());
+        when(imageService.uploadImage(any(), any())).thenReturn(getImageResponse(userResponseDTO.userName()));
+        //when(emailVerificationService.buildVerificationEmailHtml(anyString())).thenReturn(any());
+        doNothing().when(emailVerificationService).sendVerificationEmail( "OsoInfinite@test.com", "[OsoInfinite] Young Based Blog Account Verification", null);
 
         AuthResponseDTO authResponseDTO = underTest.register(registrationDTO);
 
@@ -108,7 +109,15 @@ class AuthenticationServiceTest extends TestUtils {
     @ValueSource(strings = {"null", "  ", ""})
     void shouldThrowExceptionWhenUserNameIsNullOrBlank(String username) {
         username = username.equals("null") ? null : username;
-        RegistrationDTO registrationDTO = getEmptyRegistrationDTO(username);
+        RegistrationDTO registrationDTO = getCustomRegistrationDTO(
+                "Osaretin",
+                "Omofonmwan",
+                username,
+                "test",
+                "test@email.com",
+                null,
+                null
+        );
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> underTest.register(registrationDTO));
         assertEquals("Username is required", exception.getMessage());

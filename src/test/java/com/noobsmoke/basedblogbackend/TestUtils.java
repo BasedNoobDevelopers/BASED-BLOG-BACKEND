@@ -1,11 +1,15 @@
 package com.noobsmoke.basedblogbackend;
 
+import com.noobsmoke.basedblogbackend.dto.ImageResponseDTO;
+import com.noobsmoke.basedblogbackend.dto.ImageServiceResponseDTO;
 import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
 import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
 import com.noobsmoke.basedblogbackend.model.User;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 public class TestUtils {
 
@@ -14,15 +18,40 @@ public class TestUtils {
     protected String fakeSecretKey = "FinalFlashdssafkdlaGSDsdfadnsdfasidoUyiOIoofdfakeu";
     protected long fakeExpirationTime = 2000L;
 
-    protected RegistrationDTO getEmptyRegistrationDTO(String username) {
+    protected ImageServiceResponseDTO getImageServiceResponse(String username) {
+        return new ImageServiceResponseDTO(
+                "Image uploaded",
+                username + "_test_image.jpg",
+                200,
+                "http://test-domain/" + username + "_test_image.jpg"
+        );
+    }
+
+    protected ImageResponseDTO getImageResponse(String username) {
+        return new ImageResponseDTO(
+                username + "_test_image.jpg",
+                "http://test-domain/" + username + "_test_image.jpg",
+                "http://test-domain-thumbnail/" + username + "_test_image.jpg"
+        );
+    }
+
+    protected RegistrationDTO getCustomRegistrationDTO(
+            String firstName,
+            String lastName,
+            String username,
+            String password,
+            String email,
+            MultipartFile avatar,
+            List<String> favoriteTopics
+    ) {
         return new RegistrationDTO(
-                null,
-                null,
+                firstName,
+                lastName,
                 username,
-                null,
-                null,
-                null,
-                null
+                password,
+                email,
+                avatar,
+                favoriteTopics
         );
     }
 
