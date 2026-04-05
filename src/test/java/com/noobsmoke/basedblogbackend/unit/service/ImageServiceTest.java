@@ -9,14 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -28,21 +26,18 @@ public class ImageServiceTest extends TestUtils {
     private WebClient webClient;
     private WebClient.RequestBodyUriSpec requestBodyUriSpec;
     private WebClient.RequestHeadersSpec<?> requestHeadersSpec;
-    private WebClient.RequestBodySpec requestBodySpec;
     private WebClient.ResponseSpec responseSpec;
-    private MultipartBodyBuilder multipartBodyBuilder;
-    private MultipartBodyBuilder.PartBuilder partBuilder;
+    private MultipartFile multipartFile;
 
 
     @BeforeEach
     void setUp() {
         webClient = mock(WebClient.class);
+        multipartFile = mock(MultipartFile.class);
         requestBodyUriSpec = mock(WebClient.RequestBodyUriSpec.class);
         requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
-        requestBodySpec = mock(WebClient.RequestBodySpec.class);
         responseSpec = mock(WebClient.ResponseSpec.class);
-        multipartBodyBuilder = mock(MultipartBodyBuilder.class);
-        partBuilder = mock(MultipartBodyBuilder.PartBuilder.class);
+
 
         underTest = new ImageService(
                 webClient,
@@ -52,12 +47,6 @@ public class ImageServiceTest extends TestUtils {
     }
 
     @Test
-//    @ValueSource(strings = {
-//            "image/png"
-////            "image/jpeg",
-////            "image/jpg",
-////            "image/gif"
-//    })
     void shouldUploadImage() {
         String username = "OsoInfinite";
         ImageServiceResponseDTO imageServiceResponseDTO = getImageServiceResponse(username);
@@ -90,8 +79,73 @@ public class ImageServiceTest extends TestUtils {
         assertEquals(imageResponseDTO.imageKey(), actualResponse.imageKey());
         assertEquals(imageResponseDTO.imageUrl(), actualResponse.imageUrl());
         assertEquals(imageResponseDTO.thumbnailUrl(), actualResponse.thumbnailUrl());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenFileFailedToUpload() {
+        String username = "OsoInfinite";
+        ImageServiceResponseDTO imageServiceResponseDTO = getImageServiceResponse(username);
+        ImageResponseDTO imageResponseDTO = getImageResponse(username);
 
 
+        when(multipartFile.isEmpty()).thenReturn(false);
+        when(multipartFile.getContentType()).thenReturn("image/jpg");
+        when(multipartFile.getOriginalFilename()).thenReturn("test_image.jpg");
+
+
+
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri("/upload")).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.body(any(BodyInserter.class))).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(ImageServiceResponseDTO.class))
+                .thenReturn(Mono.just(imageServiceResponseDTO));
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> underTest.uploadImage(username, multipartFile));
+
+        assertEquals("Failed to upload image", exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"null", ""})
+    void shouldThrowExceptionWhenImageFileIsNullOrEmpty(String scenario) {
+        if (scenario.isBlank()) {
+            when(multipartFile.isEmpty()).thenReturn(true);
+        } else {
+            multipartFile = null;
+        }
+
+        MultipartFile finalMultipartFile = multipartFile;
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> underTest.uploadImage("Test", finalMultipartFile));
+        assertEquals("Image file is required", exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "null",
+            "",
+            " "
+    })
+    void shouldThrowExceptionWhenImageFileContentTypeIsNullOrBlank(String contentType) {
+        contentType = (contentType.equals("null")) ? null : contentType;
+        when(multipartFile.getContentType()).thenReturn(contentType);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> underTest.uploadImage("Test", multipartFile));
+        assertEquals("Image content type is required", exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "image/nef",
+            "image/webp"
+    })
+    void shouldThrowExceptionImageContentTypeIsNotSupported(String contentType) {
+        when(multipartFile.getContentType()).thenReturn(contentType);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> underTest.uploadImage("test", multipartFile));
+        assertEquals("Unsupported image type", exception.getMessage());
     }
 
     @ParameterizedTest
