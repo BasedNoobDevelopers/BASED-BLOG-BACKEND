@@ -1,10 +1,7 @@
 package com.noobsmoke.basedblogbackend.unit.service;
 
 import com.noobsmoke.basedblogbackend.TestUtils;
-import com.noobsmoke.basedblogbackend.dto.AuthResponseDTO;
-import com.noobsmoke.basedblogbackend.dto.LoginDTO;
-import com.noobsmoke.basedblogbackend.dto.RegistrationDTO;
-import com.noobsmoke.basedblogbackend.dto.UserResponseDTO;
+import com.noobsmoke.basedblogbackend.dto.*;
 import com.noobsmoke.basedblogbackend.mapper.UserMapper;
 import com.noobsmoke.basedblogbackend.model.User;
 import com.noobsmoke.basedblogbackend.repository.FakeRepo;
@@ -66,16 +63,16 @@ class AuthenticationServiceTest extends TestUtils {
         RegistrationDTO registrationDTO = getRegistrationDTOList().getFirst();
         User user = getUsers().getFirst();
         UserResponseDTO userResponseDTO = getExpectedResponseList().getFirst();
+        ImageResponseDTO imageResponseDTO = getImageResponse(userResponseDTO.userName());
 
         when(fakeRepo.containsUsername(registrationDTO.userName())).thenReturn(false);
         when(userMapper.toUserEntity(registrationDTO)).thenReturn(user);
+        when(imageService.uploadImage(any(), any())).thenReturn(imageResponseDTO);
         when(passwordEncoder.encode(registrationDTO.password())).thenReturn(fakeEncodedPassword);
         when(jwtService.generateToken(user)).thenReturn(fakeToken);
         when(jwtService.getJwtExpirationTime()).thenReturn(fakeTime);
         when(userMapper.toUserResponse(user)).thenReturn(userResponseDTO);
-        when(imageService.uploadImage(any(), any())).thenReturn(getImageResponse(userResponseDTO.userName()));
-        //when(emailVerificationService.buildVerificationEmailHtml(anyString())).thenReturn(any());
-        doNothing().when(emailVerificationService).sendVerificationEmail( "OsoInfinite@test.com", "[OsoInfinite] Young Based Blog Account Verification", null);
+        when(emailVerificationService.buildVerificationEmailHtml(anyString())).thenReturn("<html>swamp</html>");
 
         AuthResponseDTO authResponseDTO = underTest.register(registrationDTO);
 
@@ -85,6 +82,9 @@ class AuthenticationServiceTest extends TestUtils {
         assertEquals(fakeEncodedPassword, user.getPassword());
         assertEquals(fakeTime, authResponseDTO.expirationTime());
         assertEquals(fakeToken, authResponseDTO.jwtToken());
+        assertEquals(imageResponseDTO.imageKey(), authResponseDTO.userImage().imageKey());
+        assertEquals(imageResponseDTO.imageUrl(), authResponseDTO.userImage().imageUrl());
+        assertEquals(imageResponseDTO.thumbnailUrl(), authResponseDTO.userImage().thumbnailUrl());
 
         verify(fakeRepo).containsUsername(registrationDTO.userName());
         verify(userMapper).toUserEntity(registrationDTO);
@@ -93,6 +93,14 @@ class AuthenticationServiceTest extends TestUtils {
         verify(jwtService).generateToken(user);
         verify(jwtService).getJwtExpirationTime();
         verify(userMapper).toUserResponse(user);
+        verify(emailVerificationService).buildVerificationEmailHtml(anyString());
+        verify(emailVerificationService).sendVerificationEmail(
+                user.getEmail(),
+                "[" + user.getUsername() + "] Young Based Blog Account Verification",
+                "<html>swamp</html>"
+
+        );
+        verify(imageService).uploadImage(registrationDTO.userName(), registrationDTO.avatar());
     }
 
     @Test
